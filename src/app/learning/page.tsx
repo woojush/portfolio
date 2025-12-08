@@ -9,17 +9,10 @@ interface LearningPageProps {
 }
 
 async function LearningContent({ subject }: { subject?: string }) {
-  // Fetch all entries and subjects
+  // Fetch all entries (always fetch all for category buttons)
   const entries = await learningRepository.getPublicEntries();
-  const subjects = await learningRepository.getSubjects();
 
-  // If subject is specified, show entries for that subject
-  if (subject) {
-    const filteredEntries = await learningRepository.getEntriesBySubject(subject);
-    return <LearningClient entries={filteredEntries} subjects={subjects.filter((s) => s.subject === subject)} initialSubject={subject} />;
-  }
-
-  return <LearningClient entries={entries} subjects={subjects} />;
+  return <LearningClient entries={entries} initialSubject={subject} />;
 }
 
 export default async function LearningPage({ searchParams }: LearningPageProps) {

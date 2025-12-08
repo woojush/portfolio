@@ -3,12 +3,11 @@
 import { useMemo, useState, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import type { LearningEntry } from '@/lib/firestore/types';
-import { LearningSubjectCard } from './LearningSubjectCard';
 import { LearningEntryCard } from './LearningEntryCard';
 
 interface LearningClientProps {
   entries: LearningEntry[];
-  subjects: Array<{ subject: string; count: number; latestDate: string }>;
+  subjects?: Array<{ subject: string; count: number; latestDate: string }>;
   initialSubject?: string;
 }
 
@@ -29,10 +28,6 @@ export function LearningClient({ entries, subjects, initialSubject }: LearningCl
     return categoryList;
   }, [entries]);
 
-  const filteredSubjects = useMemo(() => {
-    if (activeCategory === 'all') return subjects;
-    return subjects.filter((s) => s.subject === activeCategory);
-  }, [activeCategory, subjects]);
 
   return (
     <main className="mx-auto max-w-5xl px-4 pb-16 pt-3 md:px-6 md:pt-4 bg-slate-100 text-slate-900">
@@ -77,36 +72,26 @@ export function LearningClient({ entries, subjects, initialSubject }: LearningCl
           </div>
         )}
 
-        {/* Subject 카드 그리드 또는 Entry 카드 그리드 */}
+        {/* Entry 카드 그리드 (항상 글 카드만 표시) */}
         <div className="mt-6">
-          {initialSubject ? (
-            // 특정 subject가 선택된 경우: Entry 카드 표시
-            entries.length === 0 ? (
-              <p className="text-sm text-slate-400">해당 카테고리에 기록이 없습니다.</p>
-            ) : (
+          {(() => {
+            // 필터링된 entries
+            const filteredEntries = activeCategory === 'all' 
+              ? entries 
+              : entries.filter((e) => e.subject === activeCategory);
+            
+            if (filteredEntries.length === 0) {
+              return <p className="text-sm text-slate-400">해당 카테고리에 기록이 없습니다.</p>;
+            }
+            
+            return (
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {entries.map((entry) => (
+                {filteredEntries.map((entry) => (
                   <LearningEntryCard key={entry.id} entry={entry} />
                 ))}
               </div>
-            )
-          ) : (
-            // 전체 보기: Subject 카드 표시
-            filteredSubjects.length === 0 ? (
-              <p className="text-sm text-slate-400">해당 카테고리에 기록이 없습니다.</p>
-            ) : (
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {filteredSubjects.map((subject) => (
-                  <LearningSubjectCard
-                    key={subject.subject}
-                    subject={subject.subject}
-                    count={subject.count}
-                    latestDate={subject.latestDate}
-                  />
-                ))}
-              </div>
-            )
-          )}
+            );
+          })()}
         </div>
       </section>
     </main>
