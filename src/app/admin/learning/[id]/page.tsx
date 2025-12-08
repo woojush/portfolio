@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { learningRepository } from '@/lib/repositories/learningRepository';
 import type { LearningEntry } from '@/lib/firestore/types';
-import { MarkdownEditor } from '@/components/admin/MarkdownEditor';
+import { TiptapEditor } from '@/components/admin/TiptapEditor';
 
 export default function AdminLearningEditorPage() {
   const params = useParams();
@@ -17,6 +17,8 @@ export default function AdminLearningEditorPage() {
 
   const [loading, setLoading] = useState(!isNew);
   const [saving, setSaving] = useState(false);
+  const [existingSubjects, setExistingSubjects] = useState<string[]>([]);
+  const [showSubjectDropdown, setShowSubjectDropdown] = useState(false);
   const [entry, setEntry] = useState<Partial<LearningEntry>>({
     title: '',
     subject: '',
@@ -30,10 +32,21 @@ export default function AdminLearningEditorPage() {
   });
 
   useEffect(() => {
+    loadExistingSubjects();
     if (!isNew) {
       loadEntry();
     }
   }, [id, isNew]);
+
+  async function loadExistingSubjects() {
+    try {
+      const subjects = await learningRepository.getSubjects();
+      const uniqueSubjects = Array.from(new Set(subjects.map(s => s.subject))).filter(Boolean);
+      setExistingSubjects(uniqueSubjects);
+    } catch (error) {
+      console.error('Error loading subjects:', error);
+    }
+  }
 
   async function loadEntry() {
     try {
@@ -140,9 +153,9 @@ export default function AdminLearningEditorPage() {
 
       {/* Editor layout */}
       <div className="flex flex-1 overflow-hidden">
-        {/* Left: Markdown Editor */}
+        {/* Left: Rich Text Editor */}
         <div className="flex-1 overflow-auto p-4">
-          <MarkdownEditor
+          <TiptapEditor
             value={entry.content || ''}
             onChange={(value) => setEntry({ ...entry, content: value })}
           />
@@ -177,18 +190,47 @@ export default function AdminLearningEditorPage() {
               >
                 Subject *
               </label>
-              <input
-                id="subject-input"
-                type="text"
-                value={entry.subject || ''}
-                onChange={(e) =>
-                  setEntry({ ...entry, subject: e.target.value })
-                }
-                onClick={(e) => e.currentTarget.select()}
-                onFocus={(e) => e.currentTarget.select()}
-                className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 focus:border-warmBeige focus:outline-none focus:ring-1 focus:ring-warmBeige/50 cursor-text"
-                placeholder="Math, CS, AI, etc."
-              />
+              <div className="relative">
+                <div className="flex gap-2">
+                  <input
+                    id="subject-input"
+                    type="text"
+                    value={entry.subject || ''}
+                    onChange={(e) =>
+                      setEntry({ ...entry, subject: e.target.value })
+                    }
+                    onFocus={() => setShowSubjectDropdown(true)}
+                    className="flex-1 rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 focus:border-warmBeige focus:outline-none focus:ring-1 focus:ring-warmBeige/50 cursor-text"
+                    placeholder="Math, CS, AI, etc."
+                  />
+                  {existingSubjects.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => setShowSubjectDropdown(!showSubjectDropdown)}
+                      className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-xs text-slate-300 hover:bg-slate-800 transition"
+                    >
+                      선택
+                    </button>
+                  )}
+                </div>
+                {showSubjectDropdown && existingSubjects.length > 0 && (
+                  <div className="absolute z-10 mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 shadow-lg max-h-48 overflow-auto">
+                    {existingSubjects.map((subject) => (
+                      <button
+                        key={subject}
+                        type="button"
+                        onClick={() => {
+                          setEntry({ ...entry, subject });
+                          setShowSubjectDropdown(false);
+                        }}
+                        className="w-full px-3 py-2 text-left text-sm text-slate-300 hover:bg-slate-800 transition"
+                      >
+                        {subject}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
 
             <div className="grid grid-cols-2 gap-2">

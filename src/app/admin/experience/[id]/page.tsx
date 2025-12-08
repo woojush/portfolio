@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { experienceRepository } from '@/lib/repositories/experienceRepository';
 import type { ExperienceItem } from '@/lib/firestore/types';
-import { MarkdownEditor } from '@/components/admin/MarkdownEditor';
+import { TiptapEditor } from '@/components/admin/TiptapEditor';
 
 export default function AdminExperienceEditorPage() {
   const params = useParams();
@@ -16,6 +16,8 @@ export default function AdminExperienceEditorPage() {
 
   const [loading, setLoading] = useState(!isNew);
   const [saving, setSaving] = useState(false);
+  const [existingCategories, setExistingCategories] = useState<string[]>([]);
+  const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
   const [item, setItem] = useState<Partial<ExperienceItem>>({
     periodLabel: '',
     category: '',
@@ -31,10 +33,21 @@ export default function AdminExperienceEditorPage() {
   });
 
   useEffect(() => {
+    loadExistingCategories();
     if (!isNew) {
       loadItem();
     }
   }, [id, isNew]);
+
+  async function loadExistingCategories() {
+    try {
+      const entries = await experienceRepository.getAllEntries();
+      const uniqueCategories = Array.from(new Set(entries.map(e => e.category).filter(Boolean)));
+      setExistingCategories(uniqueCategories);
+    } catch (error) {
+      console.error('Error loading categories:', error);
+    }
+  }
 
   async function loadItem() {
     try {
@@ -143,9 +156,9 @@ export default function AdminExperienceEditorPage() {
 
       {/* Editor layout */}
       <div className="flex flex-1 overflow-hidden">
-        {/* Left: Markdown Editor */}
+        {/* Left: Rich Text Editor */}
         <div className="flex-1 overflow-auto p-4">
-          <MarkdownEditor
+          <TiptapEditor
             value={item.content || ''}
             onChange={(value) => setItem({ ...item, content: value })}
           />
@@ -182,18 +195,47 @@ export default function AdminExperienceEditorPage() {
               >
                 Category *
               </label>
-              <input
-                id="category-input"
-                type="text"
-                value={item.category || ''}
-                onChange={(e) =>
-                  setItem({ ...item, category: e.target.value })
-                }
-                onClick={(e) => e.currentTarget.select()}
-                onFocus={(e) => e.currentTarget.select()}
-                className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 focus:border-warmBeige focus:outline-none focus:ring-1 focus:ring-warmBeige/50 cursor-text"
-                placeholder="part-time, project, club, military"
-              />
+              <div className="relative">
+                <div className="flex gap-2">
+                  <input
+                    id="category-input"
+                    type="text"
+                    value={item.category || ''}
+                    onChange={(e) =>
+                      setItem({ ...item, category: e.target.value })
+                    }
+                    onFocus={() => setShowCategoryDropdown(true)}
+                    className="flex-1 rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 focus:border-warmBeige focus:outline-none focus:ring-1 focus:ring-warmBeige/50 cursor-text"
+                    placeholder="part-time, project, club, military"
+                  />
+                  {existingCategories.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => setShowCategoryDropdown(!showCategoryDropdown)}
+                      className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-xs text-slate-300 hover:bg-slate-800 transition"
+                    >
+                      선택
+                    </button>
+                  )}
+                </div>
+                {showCategoryDropdown && existingCategories.length > 0 && (
+                  <div className="absolute z-10 mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 shadow-lg max-h-48 overflow-auto">
+                    {existingCategories.map((category) => (
+                      <button
+                        key={category}
+                        type="button"
+                        onClick={() => {
+                          setItem({ ...item, category });
+                          setShowCategoryDropdown(false);
+                        }}
+                        className="w-full px-3 py-2 text-left text-sm text-slate-300 hover:bg-slate-800 transition"
+                      >
+                        {category}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
 
             <div>
