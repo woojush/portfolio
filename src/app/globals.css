@@ -13,18 +13,18 @@ html {
 }
 
 body {
-  background-color: var(--surface-bg, #0f172a);
-  color: var(--text-primary, #e2e8f0);
+  background-color: var(--surface-bg, #f8fafc);
+  color: var(--text-primary, #0f172a);
   @apply antialiased;
 }
 
 :root {
-  color-scheme: dark;
-  --surface-bg: #0f172a;
-  --card-bg: rgba(15, 23, 42, 0.7);
-  --border-color: rgba(255, 255, 255, 0.08);
-  --text-primary: #e2e8f0;
-  --text-muted: #94a3b8;
+  color-scheme: light;
+  --surface-bg: #f8fafc;
+  --card-bg: rgba(255, 255, 255, 0.8);
+  --border-color: rgba(15, 23, 42, 0.1);
+  --text-primary: #0f172a;
+  --text-muted: #475569;
 }
 
 .card-surface {

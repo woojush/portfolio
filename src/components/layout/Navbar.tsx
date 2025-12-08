@@ -12,8 +12,7 @@ const publicNavItems = [
   { href: '/', label: 'Home' },
   { href: '/journey', label: 'Journey' },
   { href: '/learning', label: 'Learning' },
-  { href: '/experience', label: 'Experience' },
-  { href: '/writings', label: 'Writings' }
+  { href: '/experience', label: 'Experience' }
 ];
 
 const adminNavItems = [
@@ -60,16 +59,28 @@ export function Navbar() {
   const [isLoggedIn, refreshAuth] = useIsLoggedIn();
   const [displayName, setDisplayName] = useState('Shin Woo-Ju');
   const [hasHeroImage, setHasHeroImage] = useState(false);
-  const [navColors, setNavColors] = useState({
-    bg: 'rgba(15,23,42,0.8)', // slate-950/80
-    text: '#F8FAFC', // slate-50
-    hoverBg: 'rgba(255,255,255,0.08)',
-    hoverText: '#FFFFFF',
-    activeBg: 'rgba(255,255,255,0.10)',
-    activeText: '#FFFFFF'
-  });
   const isAdminPage = pathname?.startsWith('/admin') && pathname !== '/admin/login';
   const [loggingOut, setLoggingOut] = useState(false);
+
+  // 일반 화면: 화이트 계열 고정, 관리자: 네이비 고정
+  const navColors = isAdminPage
+    ? {
+        bg: '#0f172a', // 네이비 고정
+        text: '#E2E8F0',
+        hoverBg: 'rgba(255,255,255,0.08)',
+        hoverText: '#FFFFFF',
+        activeBg: 'rgba(255,255,255,0.10)',
+        activeText: '#FFFFFF'
+      }
+    : {
+        // 일반 화면: 화이트 계열 고정
+        bg: 'rgba(255,255,255,0.95)', // 화이트 반투명
+        text: '#0F172A', // 다크 텍스트
+        hoverBg: 'rgba(15,23,42,0.08)', // 다크 호버
+        hoverText: '#0F172A',
+        activeBg: 'rgba(15,23,42,0.10)',
+        activeText: '#0F172A'
+      };
 
   // 배경색에 따라 조화로운 팔레트 계산
   const pickPalette = (bg: string) => {
@@ -122,14 +133,6 @@ export function Navbar() {
         }
         if (settings) {
           setHasHeroImage(!!settings.heroImageUrl);
-          setNavColors({
-            bg: settings.navBgColor || 'rgba(15,23,42,0.8)',
-            text: settings.navTextColor || '#F8FAFC',
-            hoverBg: settings.navHoverBgColor || 'rgba(255,255,255,0.08)',
-            hoverText: settings.navHoverTextColor || '#FFFFFF',
-            activeBg: settings.navActiveBgColor || 'rgba(255,255,255,0.10)',
-            activeText: settings.navActiveTextColor || '#FFFFFF'
-          });
         }
       } catch (error) {
         // 실패 시 기본값 유지
@@ -138,19 +141,12 @@ export function Navbar() {
     })();
   }, []);
 
-  // 페이지 배경 색을 네비게이션 배경과 맞추기 (관리자 페이지는 클래식 네이비 고정)
+  // 페이지 배경 색 설정 (관리자: 네이비 고정, 일반: 화이트 계열 고정)
   useEffect(() => {
-    const adminBg = '#0f172a';
     if (isAdminPage) {
+      // 관리자 페이지: 네이비 고정
+      const adminBg = '#0f172a';
       const palette = pickPalette(adminBg);
-      setNavColors({
-        bg: adminBg,
-        text: palette.text,
-        hoverBg: 'rgba(255,255,255,0.08)',
-        hoverText: '#FFFFFF',
-        activeBg: 'rgba(255,255,255,0.10)',
-        activeText: '#FFFFFF'
-      });
       document.body.style.backgroundColor = adminBg;
       document.body.style.color = palette.text;
       document.documentElement.style.setProperty('--surface-bg', adminBg);
@@ -161,28 +157,25 @@ export function Navbar() {
       return;
     }
 
-    // 공개 페이지: 경험/여정 등 모든 페이지는 네비 색상과 동일한 바디 배경
-    const bgColor = navColors.bg || 'rgba(15,23,42,0.8)';
-    const palette = pickPalette(bgColor);
-
-    // 홈에서 배경 이미지가 없으면 네비와 바디를 동일 색상으로
-    if (pathname === '/' && !hasHeroImage) {
-      document.body.style.backgroundColor = bgColor;
-      document.body.style.color = palette.text;
-    } else if (pathname !== '/') {
-      document.body.style.backgroundColor = bgColor;
-      document.body.style.color = palette.text;
-    } else {
-      // 홈에서 배경 이미지가 있을 경우 기본 스타일 유지
+    // 일반 페이지: 화이트 계열 고정
+    const publicBg = '#f8fafc'; // slate-50
+    const palette = pickPalette(publicBg);
+    
+    // 홈에서 배경 이미지가 있을 경우 기본 스타일 유지
+    if (pathname === '/' && hasHeroImage) {
       document.body.style.backgroundColor = '';
       document.body.style.color = '';
+    } else {
+      document.body.style.backgroundColor = publicBg;
+      document.body.style.color = palette.text;
     }
-    document.documentElement.style.setProperty('--surface-bg', bgColor);
+    
+    document.documentElement.style.setProperty('--surface-bg', publicBg);
     document.documentElement.style.setProperty('--card-bg', palette.card);
     document.documentElement.style.setProperty('--border-color', palette.cardBorder);
     document.documentElement.style.setProperty('--text-primary', palette.text);
     document.documentElement.style.setProperty('--text-muted', palette.muted);
-  }, [isAdminPage, navColors.bg, hasHeroImage, pathname]);
+  }, [isAdminPage, hasHeroImage, pathname]);
 
   // 관리자 로그인 시에는 관리용 네비게이션만 표시
   const navItems = isLoggedIn ? adminNavItems : publicNavItems;

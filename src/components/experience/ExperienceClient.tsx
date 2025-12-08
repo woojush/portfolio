@@ -4,15 +4,6 @@ import { useMemo, useState } from 'react';
 import type { ExperienceItem } from '@/lib/firestore/types';
 import { ExperienceCard } from '@/components/experience/ExperienceCard';
 
-const categories = [
-  { key: 'all', label: '전체보기', match: [] },
-  { key: 'project', label: '프로젝트/연구', match: ['프로젝트', '연구', 'research'] },
-  { key: 'club', label: '동아리/교내외 활동', match: ['동아리', '교내', '교외', '학회', 'club'] },
-  { key: 'intern', label: '인턴/실무 경험', match: ['인턴', 'intern'] },
-  { key: 'contest', label: '공모전/해커톤', match: ['공모전', '해커톤', 'hackathon', 'contest'] },
-  { key: 'parttime', label: '알바/군 경험', match: ['알바', '파트', '군', '군대', 'army'] }
-];
-
 interface ExperienceClientProps {
   items: ExperienceItem[];
 }
@@ -20,14 +11,22 @@ interface ExperienceClientProps {
 export function ExperienceClient({ items }: ExperienceClientProps) {
   const [active, setActive] = useState<string>('all');
 
+  // 동적으로 카테고리 생성 (실제 데이터의 category 기반)
+  const categories = useMemo(() => {
+    const uniqueCategories = Array.from(new Set(items.map((item) => item.category).filter(Boolean)));
+    const categoryList = [
+      { key: 'all', label: '전체보기' },
+      ...uniqueCategories.map((category) => ({
+        key: category,
+        label: category
+      }))
+    ];
+    return categoryList;
+  }, [items]);
+
   const filtered = useMemo(() => {
     if (active === 'all') return items;
-    const cat = categories.find((c) => c.key === active);
-    if (!cat) return items;
-    return items.filter((item) => {
-      const val = (item.category || '').toLowerCase();
-      return cat.match.some((m) => val.includes(m.toLowerCase()));
-    });
+    return items.filter((item) => item.category === active);
   }, [active, items]);
 
   return (
@@ -43,23 +42,26 @@ export function ExperienceClient({ items }: ExperienceClientProps) {
           <div className="mt-4 h-px w-full bg-slate-200" />
         </header>
 
-        <div className="mt-4 flex flex-wrap gap-2">
-          {categories.map((c) => (
-            <button
-              key={c.key}
-              type="button"
-              onClick={() => setActive(c.key)}
-              className={[
-                'rounded-full px-3 py-1 text-xs md:text-sm transition border',
-                active === c.key
-                  ? 'border-blue-600 bg-blue-600 text-white'
-                  : 'border-slate-300 bg-white text-slate-900 hover:border-blue-600 hover:text-blue-600'
-              ].join(' ')}
-            >
-              {c.label}
-            </button>
-          ))}
-        </div>
+        {/* 동적 카테고리 버튼 */}
+        {categories.length > 1 && (
+          <div className="mt-4 flex flex-wrap gap-2">
+            {categories.map((c) => (
+              <button
+                key={c.key}
+                type="button"
+                onClick={() => setActive(c.key)}
+                className={[
+                  'rounded-full px-3 py-1 text-xs md:text-sm transition border',
+                  active === c.key
+                    ? 'border-blue-600 bg-blue-600 text-white'
+                    : 'border-slate-300 bg-white text-slate-900 hover:border-blue-600 hover:text-blue-600'
+                ].join(' ')}
+              >
+                {c.label}
+              </button>
+            ))}
+          </div>
+        )}
 
         <div className="mt-6 space-y-4">
           {filtered.length === 0 ? (
