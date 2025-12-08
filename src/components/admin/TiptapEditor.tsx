@@ -38,6 +38,7 @@ export function TiptapEditor({ value, onChange }: TiptapEditorProps) {
       }),
     ],
     content: value || '',
+    immediatelyRender: false, // SSR hydration 문제 해결
     editorProps: {
       attributes: {
         class: 'prose prose-invert max-w-none focus:outline-none min-h-[500px] p-4',
