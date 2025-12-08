@@ -6,16 +6,13 @@
 import { useEffect, useState } from 'react';
 import { learningRepository } from '@/lib/repositories/learningRepository';
 import { experienceRepository } from '@/lib/repositories/experienceRepository';
-import { writingsRepository } from '@/lib/repositories/writingsRepository';
-import type { LearningEntry, ExperienceItem, WritingEntry } from '@/lib/firestore/types';
+import type { LearningEntry, ExperienceItem } from '@/lib/firestore/types';
 import { LearningCard } from '@/components/learning/LearningCard';
 import { ExperienceCard } from '@/components/experience/ExperienceCard';
-import { WritingCard } from '@/components/writings/WritingCard';
 
 type FocusItem =
   | { type: 'learning'; data: LearningEntry }
-  | { type: 'experience'; data: ExperienceItem }
-  | { type: 'writing'; data: WritingEntry };
+  | { type: 'experience'; data: ExperienceItem };
 
 export default function FocusPage() {
   const [items, setItems] = useState<FocusItem[]>([]);
@@ -25,16 +22,14 @@ export default function FocusPage() {
   useEffect(() => {
     async function load() {
       try {
-        const [learnings, experiences, writings] = await Promise.all([
+        const [learnings, experiences] = await Promise.all([
           learningRepository.getAllEntries(),
-          experienceRepository.getAllEntries(),
-          writingsRepository.getAllEntries()
+          experienceRepository.getAllEntries()
         ]);
 
         const allItems: FocusItem[] = [
           ...learnings.map((l) => ({ type: 'learning' as const, data: l })),
-          ...experiences.map((e) => ({ type: 'experience' as const, data: e })),
-          ...writings.map((w) => ({ type: 'writing' as const, data: w }))
+          ...experiences.map((e) => ({ type: 'experience' as const, data: e }))
         ];
 
         // Sort by date (newest first)
@@ -42,10 +37,8 @@ export default function FocusPage() {
           const getDate = (item: FocusItem): string => {
             if (item.type === 'learning') {
               return item.data.startDate || '';
-            } else if (item.type === 'experience') {
-              return item.data.startDate || item.data.periodLabel || '';
             } else {
-              return item.data.date || '';
+              return item.data.startDate || item.data.periodLabel || '';
             }
           };
           const dateA = getDate(a);
@@ -66,8 +59,7 @@ export default function FocusPage() {
 
   const typeLabels = {
     learning: '학습',
-    experience: '경험',
-    writing: '글'
+    experience: '경험'
   };
 
   return (
@@ -76,7 +68,7 @@ export default function FocusPage() {
         <header className="section-header">
           <h1 className="text-section-title">현재까지 집중한 것들</h1>
           <p className="mt-2 max-w-2xl text-body text-slate-300">
-            학습, 경험, 글을 시간순으로 모아 둔 공간입니다. 언제 무엇에
+            학습과 경험을 시간순으로 모아 둔 공간입니다. 언제 무엇에
             집중했는지 한눈에 볼 수 있습니다.
           </p>
         </header>
@@ -103,10 +95,8 @@ export default function FocusPage() {
               const getDate = (item: FocusItem): string => {
                 if (item.type === 'learning') {
                   return item.data.startDate || '';
-                } else if (item.type === 'experience') {
-                  return item.data.startDate || item.data.periodLabel || '';
                 } else {
-                  return item.data.date || '';
+                  return item.data.startDate || item.data.periodLabel || '';
                 }
               };
               const date = getDate(item);
@@ -123,9 +113,6 @@ export default function FocusPage() {
                   )}
                   {item.type === 'experience' && (
                     <ExperienceCard item={item.data} />
-                  )}
-                  {item.type === 'writing' && (
-                    <WritingCard entry={item.data} />
                   )}
                 </div>
               );

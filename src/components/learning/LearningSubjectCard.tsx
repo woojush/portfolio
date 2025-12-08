@@ -23,7 +23,7 @@ export function LearningSubjectCard({
 
   return (
     <Link
-      href={`/learning?subject=${encodeURIComponent(subject)}`}
+      href={`/archive?tab=learning&category=${encodeURIComponent(subject)}`}
       className="group flex flex-col justify-between rounded-3xl border border-slate-800 bg-slate-900 p-5 shadow-sm transition-transform transition-colors duration-200 hover:-translate-y-0.5 hover:border-warmBeige/70 hover:bg-slate-800/80 hover:shadow-lg"
     >
       <div className="space-y-2">

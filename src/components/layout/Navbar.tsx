@@ -11,14 +11,11 @@ import { usePathname, useRouter } from 'next/navigation';
 const publicNavItems = [
   { href: '/', label: 'Home' },
   { href: '/journey', label: 'Journey' },
-  { href: '/learning', label: 'Learning' },
-  { href: '/experience', label: 'Experience' }
+  { href: '/archive', label: 'Archive' }
 ];
 
 const adminNavItems = [
-  { href: '/admin/learning', label: '학습 관리'},
-  { href: '/admin/experience', label: '경험 관리'},
-  { href: '/admin/writings', label: '글 관리' },
+  { href: '/admin/archive', label: '아카이브 관리'},
   { href: '/admin/journey', label: '여정 관리' },
   { href: '/admin/homepage', label: '홈페이지 설정'},
   { href: '/admin/dashboard', label: '대시보드'}
@@ -237,12 +234,8 @@ export function Navbar() {
             let isActive = false;
             if (isLoggedIn) {
               // 관리자 페이지: 경로가 해당 섹션으로 시작하는지 확인
-              if (item.href === '/admin/learning') {
-                isActive = pathname?.startsWith('/admin/learning') || false;
-              } else if (item.href === '/admin/experience') {
-                isActive = pathname?.startsWith('/admin/experience') || false;
-              } else if (item.href === '/admin/writings') {
-                isActive = pathname?.startsWith('/admin/writings') || false;
+              if (item.href === '/admin/archive') {
+                isActive = pathname?.startsWith('/admin/archive') || pathname?.startsWith('/admin/learning') || pathname?.startsWith('/admin/experience') || false;
               } else if (item.href === '/admin/journey') {
                 isActive = pathname?.startsWith('/admin/journey') || false;
               } else if (item.href === '/admin/dashboard') {

@@ -1,7 +1,6 @@
-import { experienceRepository } from '@/lib/repositories/experienceRepository';
-import { ExperienceClient } from '@/components/experience/ExperienceClient';
+// Experience page - redirects to archive
+import { redirect } from 'next/navigation';
 
-export default async function ExperiencePage() {
-  const items = await experienceRepository.getPublicEntries();
-  return <ExperienceClient items={items} />;
+export default function ExperiencePage() {
+  redirect('/archive');
 }
