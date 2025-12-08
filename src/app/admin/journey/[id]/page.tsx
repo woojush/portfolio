@@ -58,7 +58,6 @@ export default function AdminJourneyEditPage() {
     try {
       setSaving(true);
     const payload: Omit<JourneyItem, 'id'> = {
-      id: '',
       title: form.title || '',
       organization: form.organization || '',
       period: form.period || '',
