@@ -1,12 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Link from 'next/link';
 import { DashboardDailyRecord } from '@/components/admin/dashboard/DashboardDailyRecord';
 import { DashboardHabits } from '@/components/admin/dashboard/DashboardHabits';
 import { DashboardTodos } from '@/components/admin/dashboard/DashboardTodos';
 import { DashboardGoals } from '@/components/admin/dashboard/DashboardGoals';
 import { DashboardCalendar } from '@/components/admin/dashboard/DashboardCalendar';
+import { AdminHeader } from '@/components/admin/AdminHeader';
 import { getLocalDateString } from '@/lib/utils/dateUtils';
 
 export default function AdminDashboardPage() {
@@ -29,46 +29,7 @@ export default function AdminDashboardPage() {
     <div className="min-h-screen bg-slate-950 p-4 md:p-6 pb-20">
       <div className="mx-auto max-w-7xl space-y-6">
         {/* Header */}
-        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-slate-100">Dashboard</h1>
-            <p className="text-slate-400">
-              {new Date().toLocaleDateString('ko-KR', { 
-                weekday: 'long', 
-                year: 'numeric', 
-                month: 'long', 
-                day: 'numeric' 
-              })}
-            </p>
-          </div>
-          
-          <div className="flex gap-3 text-sm">
-             <Link 
-               href="/admin/homepage" 
-               className="rounded-lg bg-slate-800 px-4 py-2 text-slate-200 hover:bg-slate-700 transition"
-             >
-               홈페이지 설정
-             </Link>
-             <Link 
-               href="/admin/learning" 
-               className="rounded-lg bg-slate-800 px-4 py-2 text-slate-200 hover:bg-slate-700 transition"
-             >
-               Learning 관리
-             </Link>
-             <Link 
-               href="/admin/experience" 
-               className="rounded-lg bg-slate-800 px-4 py-2 text-slate-200 hover:bg-slate-700 transition"
-             >
-               Experience 관리
-             </Link>
-             <Link 
-               href="/admin/writings" 
-               className="rounded-lg bg-slate-800 px-4 py-2 text-slate-200 hover:bg-slate-700 transition"
-             >
-               Writings 관리
-             </Link>
-          </div>
-        </div>
+        <AdminHeader />
 
         {/* 1. Goals Section (Full Width) */}
         <section>

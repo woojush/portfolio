@@ -9,20 +9,12 @@ import { LearningEntryCard } from './LearningEntryCard';
 interface LearningClientProps {
   entries: LearningEntry[];
   subjects: Array<{ subject: string; count: number; latestDate: string }>;
+  initialSubject?: string;
 }
 
-export function LearningClient({ entries, subjects }: LearningClientProps) {
-  const searchParams = useSearchParams();
+export function LearningClient({ entries, subjects, initialSubject }: LearningClientProps) {
   const router = useRouter();
-  const [activeCategory, setActiveCategory] = useState<string>('all');
-
-  // URL 쿼리 파라미터에서 초기 카테고리 설정
-  useEffect(() => {
-    const subjectParam = searchParams.get('subject');
-    if (subjectParam) {
-      setActiveCategory(subjectParam);
-    }
-  }, [searchParams]);
+  const [activeCategory, setActiveCategory] = useState<string>(initialSubject || 'all');
 
   // 동적으로 카테고리 생성 (실제 데이터의 subject 기반)
   const categories = useMemo(() => {

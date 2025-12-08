@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { journeyRepository } from '@/lib/repositories/journeyRepository';
 import type { JourneyItem } from '@/lib/firestore/journey';
+import { AdminHeader } from '@/components/admin/AdminHeader';
 
 export default function AdminJourneyPage() {
   const [items, setItems] = useState<JourneyItem[]>([]);
@@ -38,13 +39,16 @@ export default function AdminJourneyPage() {
   });
 
   return (
-    <main className="mx-auto max-w-5xl px-4 pb-16 pt-10 md:px-6 md:pt-12">
-      <header className="mb-6 md:mb-8">
-        <h1 className="text-section-title">여정 관리</h1>
-        <p className="mt-2 max-w-2xl text-body text-slate-300">
-          여정 타임라인의 직위, 조직, 이미지 등을 추가/수정할 수 있습니다.
-        </p>
-      </header>
+    <div className="min-h-screen bg-slate-950 p-4 md:p-6 pb-20">
+      <div className="mx-auto max-w-7xl space-y-6">
+        <AdminHeader />
+        
+        <main>
+          <header className="mb-6 md:mb-8">
+            <p className="mt-2 max-w-2xl text-body text-slate-300">
+              여정 타임라인의 직위, 조직, 이미지 등을 추가/수정할 수 있습니다.
+            </p>
+          </header>
 
       <section className="space-y-4 rounded-3xl border border-slate-800 bg-slate-900/70 p-5">
         <div className="flex items-center justify-between">
@@ -112,7 +116,9 @@ export default function AdminJourneyPage() {
           </div>
         )}
       </section>
-    </main>
+        </main>
+      </div>
+    </div>
   );
 }
 

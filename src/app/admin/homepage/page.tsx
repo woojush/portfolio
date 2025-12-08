@@ -6,6 +6,7 @@
 import { useState, useEffect } from 'react';
 import { dashboardRepository } from '@/lib/repositories/dashboardRepository';
 import type { HomePageSettings } from '@/lib/firestore/types';
+import { AdminHeader } from '@/components/admin/AdminHeader';
 
 export default function HomePageSettingsPage() {
   const [loading, setLoading] = useState(true);
@@ -203,21 +204,17 @@ export default function HomePageSettingsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 p-4 md:p-6">
-      <div className="mx-auto max-w-4xl">
-        {/* Header */}
-        <div className="mb-6">
-          <a
-            href="/admin/dashboard"
-            className="mb-2 text-xs text-slate-400 hover:text-slate-200 transition"
-          >
-            ← Dashboard로 돌아가기
-          </a>
-          <h1 className="text-2xl font-bold text-slate-100">홈 페이지 설정</h1>
-          <p className="mt-2 text-sm text-slate-400">
-            홈 페이지의 배경 이미지, 이름, 자기소개 등을 관리합니다.
-          </p>
-        </div>
+    <div className="min-h-screen bg-slate-950 p-4 md:p-6 pb-20">
+      <div className="mx-auto max-w-7xl space-y-6">
+        <AdminHeader />
+        
+        <div className="mx-auto max-w-4xl">
+          {/* Description */}
+          <div className="mb-6">
+            <p className="mt-2 text-sm text-slate-400">
+              홈 페이지의 배경 이미지, 이름, 자기소개 등을 관리합니다.
+            </p>
+          </div>
 
         {/* Form */}
         <div className="space-y-6">
@@ -495,6 +492,7 @@ export default function HomePageSettingsPage() {
               {saving ? '저장 중...' : '저장'}
             </button>
           </div>
+        </div>
         </div>
       </div>
     </div>

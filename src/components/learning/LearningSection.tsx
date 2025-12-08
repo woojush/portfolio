@@ -4,7 +4,7 @@
 // and displays subject category cards on the home page.
 
 import { useEffect, useState } from 'react';
-import { getLearningSubjects } from '@/lib/firestore/learning';
+import { learningRepository } from '@/lib/repositories/learningRepository';
 import { LearningSubjectCard } from './LearningSubjectCard';
 
 interface SubjectInfo {
@@ -21,7 +21,7 @@ export function LearningSection() {
   useEffect(() => {
     async function load() {
       try {
-        const data = await getLearningSubjects();
+        const data = await learningRepository.getSubjects();
         setSubjects(data);
       } catch (err) {
         setError('학습 기록을 불러오지 못했습니다.');

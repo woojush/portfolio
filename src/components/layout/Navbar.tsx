@@ -177,6 +177,11 @@ export function Navbar() {
     document.documentElement.style.setProperty('--text-muted', palette.muted);
   }, [isAdminPage, hasHeroImage, pathname]);
 
+  // 관리자 페이지에서는 Navbar를 표시하지 않음 (각 페이지에 AdminHeader 사용)
+  if (isAdminPage) {
+    return null;
+  }
+
   // 관리자 로그인 시에는 관리용 네비게이션만 표시
   const navItems = isLoggedIn ? adminNavItems : publicNavItems;
 

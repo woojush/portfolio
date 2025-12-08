@@ -7,6 +7,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { learningRepository } from '@/lib/repositories/learningRepository';
 import type { LearningEntry } from '@/lib/firestore/types';
+import { AdminHeader } from '@/components/admin/AdminHeader';
 
 export default function AdminLearningPage() {
   const [entries, setEntries] = useState<LearningEntry[]>([]);
@@ -33,13 +34,16 @@ export default function AdminLearningPage() {
   }
 
   return (
-    <main className="mx-auto max-w-5xl px-4 pb-16 pt-10 md:px-6 md:pt-12">
-      <header className="mb-6 md:mb-8">
-        <h1 className="text-section-title">학습 관리</h1>
-        <p className="mt-2 max-w-2xl text-body text-slate-300">
-          학습 기록을 관리할 수 있습니다. 각 항목을 클릭하여 편집하거나, "새 항목 추가" 버튼으로 새 항목을 만들 수 있습니다.
-        </p>
-      </header>
+    <div className="min-h-screen bg-slate-950 p-4 md:p-6 pb-20">
+      <div className="mx-auto max-w-7xl space-y-6">
+        <AdminHeader />
+        
+        <main>
+          <header className="mb-6 md:mb-8">
+            <p className="mt-2 max-w-2xl text-body text-slate-300">
+              학습 기록을 관리할 수 있습니다. 각 항목을 클릭하여 편집하거나, "새 항목 추가" 버튼으로 새 항목을 만들 수 있습니다.
+            </p>
+          </header>
 
       <section className="space-y-4 rounded-2xl border border-slate-800 bg-slate-950/70 p-5">
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
@@ -171,7 +175,9 @@ export default function AdminLearningPage() {
           </div>
         )}
       </section>
-    </main>
+        </main>
+      </div>
+    </div>
   );
 }
 

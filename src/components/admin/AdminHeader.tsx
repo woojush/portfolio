@@ -1,0 +1,95 @@
+'use client';
+
+import Link from 'next/link';
+import { useRouter, usePathname } from 'next/navigation';
+import { useState } from 'react';
+
+export function AdminHeader() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const [loggingOut, setLoggingOut] = useState(false);
+
+  // 현재 페이지에 따라 제목 결정
+  const getPageTitle = () => {
+    if (pathname?.startsWith('/admin/dashboard')) return 'Dashboard';
+    if (pathname?.startsWith('/admin/learning')) return 'Learning 관리';
+    if (pathname?.startsWith('/admin/experience')) return 'Experience 관리';
+    if (pathname?.startsWith('/admin/writings')) return 'Writings 관리';
+    if (pathname?.startsWith('/admin/journey')) return 'Journey 관리';
+    if (pathname?.startsWith('/admin/homepage')) return '홈페이지 설정';
+    return 'Dashboard';
+  };
+
+  async function handleLogout() {
+    if (loggingOut) return;
+    
+    setLoggingOut(true);
+    try {
+      const res = await fetch('/api/admin/logout', {
+        method: 'POST'
+      });
+      
+      if (res.ok) {
+        router.push('/');
+        router.refresh();
+      } else {
+        console.error('Logout failed');
+      }
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
+      setLoggingOut(false);
+    }
+  }
+
+  const today = new Date().toLocaleDateString('ko-KR', { 
+    weekday: 'long', 
+    year: 'numeric', 
+    month: 'long', 
+    day: 'numeric' 
+  });
+
+  return (
+    <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6">
+      <div>
+        <h1 className="text-2xl font-bold text-slate-100">{getPageTitle()}</h1>
+        <p className="text-slate-400">{today}</p>
+      </div>
+      
+      <div className="flex gap-3 text-sm">
+        <Link 
+          href="/admin/homepage" 
+          className="rounded-lg bg-slate-800 px-4 py-2 text-slate-200 hover:bg-slate-700 transition"
+        >
+          홈페이지 설정
+        </Link>
+        <Link 
+          href="/admin/learning" 
+          className="rounded-lg bg-slate-800 px-4 py-2 text-slate-200 hover:bg-slate-700 transition"
+        >
+          Learning 관리
+        </Link>
+        <Link 
+          href="/admin/experience" 
+          className="rounded-lg bg-slate-800 px-4 py-2 text-slate-200 hover:bg-slate-700 transition"
+        >
+          Experience 관리
+        </Link>
+        <Link 
+          href="/admin/writings" 
+          className="rounded-lg bg-slate-800 px-4 py-2 text-slate-200 hover:bg-slate-700 transition"
+        >
+          Writings 관리
+        </Link>
+        <button
+          onClick={handleLogout}
+          disabled={loggingOut}
+          className="rounded-lg bg-slate-800 px-4 py-2 text-slate-200 hover:bg-slate-700 transition disabled:opacity-50"
+        >
+          {loggingOut ? '로그아웃 중...' : '로그아웃'}
+        </button>
+      </div>
+    </div>
+  );
+}
+
