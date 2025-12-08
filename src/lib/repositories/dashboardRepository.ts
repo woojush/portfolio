@@ -16,7 +16,7 @@ import {
   where
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase/client';
-import type { Goal, HabitDiagnosis, HomePageSettings } from '@/lib/firestore/types';
+import type { Goal, HabitDiagnosis, HomePageSettings, DashboardSettings } from '@/lib/firestore/types';
 
 export interface TodayMemo {
   id: string;
@@ -610,6 +610,60 @@ export const dashboardRepository = {
       }
     } catch (error) {
       console.error('Error saving home page settings:', error);
+      throw error;
+    }
+  },
+
+  // Dashboard Settings (Calendar URL 등)
+  async getDashboardSettings(): Promise<DashboardSettings | null> {
+    try {
+      const docRef = doc(db, 'dashboard_settings', 'main');
+      const docSnap = await getDoc(docRef);
+      
+      if (!docSnap.exists()) {
+        return null;
+      }
+      
+      return {
+        id: docSnap.id,
+        ...docSnap.data()
+      } as DashboardSettings;
+    } catch (error) {
+      console.error('Error fetching dashboard settings:', error);
+      return null;
+    }
+  },
+
+  async saveDashboardSettings(settings: Omit<DashboardSettings, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> {
+    try {
+      const docRef = doc(db, 'dashboard_settings', 'main');
+      const docSnap = await getDoc(docRef);
+      const now = new Date().toISOString();
+      
+      const dataToSave: Record<string, any> = {
+        updatedAt: now
+      };
+      
+      // calendarUrl이 명시적으로 전달된 경우만 저장 (undefined가 아닌 경우)
+      if (settings.calendarUrl !== undefined) {
+        // 빈 문자열이면 null로 저장, 아니면 그대로 저장
+        dataToSave.calendarUrl = settings.calendarUrl.trim() === '' ? null : settings.calendarUrl.trim();
+      }
+      
+      if (docSnap.exists()) {
+        // 기존 문서가 있으면 업데이트
+        await updateDoc(docRef, dataToSave);
+        return docSnap.id;
+      } else {
+        // 새 문서 생성
+        await setDoc(docRef, {
+          ...dataToSave,
+          createdAt: now
+        });
+        return 'main';
+      }
+    } catch (error) {
+      console.error('Error saving dashboard settings:', error);
       throw error;
     }
   },

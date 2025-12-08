@@ -1,38 +1,121 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { dashboardRepository } from '@/lib/repositories/dashboardRepository';
 
 export function DashboardCalendar() {
   const [calendarUrl, setCalendarUrl] = useState('');
   const [isEditing, setIsEditing] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    const savedUrl = localStorage.getItem('calendar_url') || '';
-    setCalendarUrl(savedUrl);
-  }, []);
-
-  function handleSave() {
-    // Convert calendar URL to embed format if needed
-    let embedUrl = calendarUrl.trim();
-    
-    // If it's a regular calendar URL, try to convert to embed format
-    if (embedUrl.includes('calendar.google.com') && !embedUrl.includes('/embed')) {
-      // Extract calendar ID from various URL formats
-      const cidMatch = embedUrl.match(/[?&]cid=([^&]+)/);
-      const srcMatch = embedUrl.match(/[?&]src=([^&]+)/);
-      
-      let calendarId = '';
-      if (cidMatch) calendarId = decodeURIComponent(cidMatch[1]);
-      else if (srcMatch) calendarId = decodeURIComponent(srcMatch[1]);
-      
-      if (calendarId) {
-        embedUrl = `https://calendar.google.com/calendar/embed?src=${encodeURIComponent(calendarId)}&ctz=Asia%2FSeoul`;
+    async function loadCalendarUrl() {
+      try {
+        setLoading(true);
+        const settings = await dashboardRepository.getDashboardSettings();
+        console.log('📅 Loaded dashboard settings:', settings);
+        
+        // calendarUrl이 존재하고 빈 문자열이 아닌 경우
+        if (settings?.calendarUrl && settings.calendarUrl.trim() !== '') {
+          setCalendarUrl(settings.calendarUrl);
+          console.log('📅 Calendar URL loaded from Firestore:', settings.calendarUrl);
+        } else {
+          // Fallback to localStorage for backward compatibility
+          const savedUrl = localStorage.getItem('calendar_url') || '';
+          if (savedUrl && savedUrl.trim() !== '') {
+            console.log('📅 Calendar URL loaded from localStorage:', savedUrl);
+            setCalendarUrl(savedUrl);
+            // Migrate to Firestore
+            try {
+              await dashboardRepository.saveDashboardSettings({ calendarUrl: savedUrl });
+              localStorage.removeItem('calendar_url');
+              console.log('📅 Migrated calendar URL to Firestore');
+            } catch (migrateError) {
+              console.error('Error migrating calendar URL:', migrateError);
+            }
+          } else {
+            console.log('📅 No calendar URL found');
+          }
+        }
+      } catch (error) {
+        console.error('Error loading calendar URL:', error);
+        // Fallback to localStorage
+        const savedUrl = localStorage.getItem('calendar_url') || '';
+        if (savedUrl && savedUrl.trim() !== '') {
+          setCalendarUrl(savedUrl);
+          console.log('📅 Calendar URL loaded from localStorage (fallback):', savedUrl);
+        }
+      } finally {
+        setLoading(false);
       }
     }
+    loadCalendarUrl();
+  }, []);
 
-    setCalendarUrl(embedUrl);
-    localStorage.setItem('calendar_url', embedUrl);
-    setIsEditing(false);
+  async function handleSave() {
+    if (saving) return;
+    
+    setSaving(true);
+    try {
+      // Convert calendar URL to embed format if needed
+      let embedUrl = calendarUrl.trim();
+      
+      // 빈 문자열이면 저장하지 않음
+      if (embedUrl === '') {
+        alert('캘린더 URL을 입력해주세요.');
+        setSaving(false);
+        return;
+      }
+      
+      // If it's a regular calendar URL, try to convert to embed format
+      if (embedUrl.includes('calendar.google.com') && !embedUrl.includes('/embed')) {
+        // Extract calendar ID from various URL formats
+        const cidMatch = embedUrl.match(/[?&]cid=([^&]+)/);
+        const srcMatch = embedUrl.match(/[?&]src=([^&]+)/);
+        
+        let calendarId = '';
+        if (cidMatch) calendarId = decodeURIComponent(cidMatch[1]);
+        else if (srcMatch) calendarId = decodeURIComponent(srcMatch[1]);
+        
+        if (calendarId) {
+          embedUrl = `https://calendar.google.com/calendar/embed?src=${encodeURIComponent(calendarId)}&ctz=Asia%2FSeoul`;
+        }
+      }
+
+      console.log('📅 Saving calendar URL:', embedUrl);
+      
+      // Save to Firestore
+      await dashboardRepository.saveDashboardSettings({ calendarUrl: embedUrl });
+      console.log('📅 Calendar URL saved to Firestore');
+      
+      // Also save to localStorage as backup
+      localStorage.setItem('calendar_url', embedUrl);
+      console.log('📅 Calendar URL saved to localStorage');
+      
+      setCalendarUrl(embedUrl);
+      setIsEditing(false);
+    } catch (error) {
+      console.error('Error saving calendar URL:', error);
+      alert('캘린더 URL 저장 중 오류가 발생했습니다.');
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="card-surface p-6 h-full flex flex-col">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold text-slate-100 flex items-center gap-2">
+            📅 캘린더
+          </h2>
+        </div>
+        <div className="flex-1 flex items-center justify-center text-slate-500 text-sm">
+          불러오는 중...
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -46,7 +129,8 @@ export function DashboardCalendar() {
         </h2>
         <button
           onClick={() => setIsEditing(!isEditing)}
-          className="text-xs text-slate-400 hover:text-slate-200"
+          disabled={saving}
+          className="text-xs text-slate-400 hover:text-slate-200 disabled:opacity-50"
         >
           {isEditing ? '취소' : (calendarUrl ? 'URL 편집' : 'URL 설정')}
         </button>
@@ -69,9 +153,10 @@ export function DashboardCalendar() {
           </div>
           <button
             onClick={handleSave}
-            className="rounded bg-slate-800 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-700"
+            disabled={saving}
+            className="rounded bg-slate-800 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-700 disabled:opacity-50"
           >
-            저장
+            {saving ? '저장 중...' : '저장'}
           </button>
         </div>
       ) : calendarUrl ? (

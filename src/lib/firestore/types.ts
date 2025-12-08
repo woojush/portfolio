@@ -167,3 +167,11 @@ export interface HomePageSettings {
   createdAt: string;
   updatedAt: string;
 }
+
+// 대시보드 설정
+export interface DashboardSettings {
+  id: string;
+  calendarUrl?: string; // Google Calendar embed URL
+  createdAt: string;
+  updatedAt: string;
+}
