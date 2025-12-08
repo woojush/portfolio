@@ -127,7 +127,7 @@ export async function updateJourneyItem(
 ): Promise<void> {
   try {
     const docRef = doc(db, 'journeyItems', id);
-    const updateData: Record<string, unknown> = {};
+    const updateData: Record<string, any> = {};
     if (updates.period !== undefined) updateData.period = updates.period;
     if (updates.title !== undefined) updateData.title = updates.title;
     if (updates.organization !== undefined)

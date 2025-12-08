@@ -1,4 +1,4 @@
-import type { LearningEntry } from '@/data/learning';
+import type { LearningEntry } from '@/lib/firestore/types';
 
 interface LearningCardProps {
   entry: LearningEntry;
@@ -9,7 +9,7 @@ export function LearningCard({ entry }: LearningCardProps) {
     <article className="flex flex-col justify-between rounded-2xl border border-slate-800 bg-slate-900/40 p-5 transition hover:border-slate-500 hover:bg-slate-900">
       <div className="space-y-2">
         <p className="text-xs font-medium uppercase tracking-[0.18em] text-slate-400">
-          {entry.date}
+          {entry.startDate}
         </p>
         <h3 className="text-sm font-semibold text-slate-100 md:text-base">
           {entry.title}

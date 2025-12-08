@@ -88,7 +88,7 @@ export async function updateWritingEntry(
 ): Promise<void> {
   try {
     const docRef = doc(db, 'writingEntries', id);
-    const updateData: Record<string, unknown> = {};
+    const updateData: Record<string, any> = {};
     if (updates.title !== undefined) updateData.title = updates.title;
     if (updates.date !== undefined) updateData.date = updates.date;
     if (updates.type !== undefined) updateData.type = updates.type;

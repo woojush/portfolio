@@ -4,7 +4,8 @@
 // and displays them as accordion cards.
 
 import { useEffect, useState } from 'react';
-import { getExperienceItems, type ExperienceItem } from '@/lib/firestore/experience';
+import { experienceRepository } from '@/lib/repositories/experienceRepository';
+import type { ExperienceItem } from '@/lib/firestore/types';
 import { ExperienceCard } from './ExperienceCard';
 
 export function ExperienceSection() {
@@ -15,7 +16,7 @@ export function ExperienceSection() {
   useEffect(() => {
     async function load() {
       try {
-        const data = await getExperienceItems();
+        const data = await experienceRepository.getPublicEntries();
         setItems(data);
       } catch (err) {
         setError('경험 기록을 불러오지 못했습니다.');

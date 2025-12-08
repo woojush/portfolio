@@ -62,7 +62,7 @@ export default function AdminExperienceEditorPage() {
         summary: item.summary!,
         learnings: item.learnings || [],
         images: item.images || [],
-        content: item.content,
+        content: item.content || '',
         public: !draft,
         draft
       };

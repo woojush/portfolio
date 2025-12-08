@@ -107,7 +107,7 @@ export async function updateExperienceItem(
 ): Promise<void> {
   try {
     const docRef = doc(db, 'experienceItems', id);
-    const updateData: Record<string, unknown> = {
+    const updateData: Record<string, any> = {
       updatedAt: new Date().toISOString()
     };
     if (updates.title !== undefined) updateData.title = updates.title;

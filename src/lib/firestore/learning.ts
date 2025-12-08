@@ -176,7 +176,7 @@ export async function updateLearningEntry(
 ): Promise<void> {
   try {
     const docRef = doc(db, 'learningEntries', id);
-    const updateData: Record<string, unknown> = {
+    const updateData: Record<string, any> = {
       updatedAt: new Date().toISOString()
     };
     if (updates.title !== undefined) updateData.title = updates.title;

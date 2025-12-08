@@ -4,9 +4,10 @@
 // sorted by time (newest first), representing what I've been focusing on.
 
 import { useEffect, useState } from 'react';
-import { getLearningEntries, type LearningEntry } from '@/lib/firestore/learning';
-import { getExperienceItems, type ExperienceItem } from '@/lib/firestore/experience';
-import { getWritingEntries, type WritingEntry } from '@/lib/firestore/writings';
+import { learningRepository } from '@/lib/repositories/learningRepository';
+import { experienceRepository } from '@/lib/repositories/experienceRepository';
+import { writingsRepository } from '@/lib/repositories/writingsRepository';
+import type { LearningEntry, ExperienceItem, WritingEntry } from '@/lib/firestore/types';
 import { LearningCard } from '@/components/learning/LearningCard';
 import { ExperienceCard } from '@/components/experience/ExperienceCard';
 import { WritingCard } from '@/components/writings/WritingCard';
@@ -25,9 +26,9 @@ export default function FocusPage() {
     async function load() {
       try {
         const [learnings, experiences, writings] = await Promise.all([
-          getLearningEntries(),
-          getExperienceItems(),
-          getWritingEntries()
+          learningRepository.getAllEntries(),
+          experienceRepository.getAllEntries(),
+          writingsRepository.getAllEntries()
         ]);
 
         const allItems: FocusItem[] = [
@@ -38,8 +39,17 @@ export default function FocusPage() {
 
         // Sort by date (newest first)
         allItems.sort((a, b) => {
-          const dateA = a.data.date || a.data.period || '';
-          const dateB = b.data.date || b.data.period || '';
+          const getDate = (item: FocusItem): string => {
+            if (item.type === 'learning') {
+              return item.data.startDate || '';
+            } else if (item.type === 'experience') {
+              return item.data.startDate || item.data.periodLabel || '';
+            } else {
+              return item.data.date || '';
+            }
+          };
+          const dateA = getDate(a);
+          const dateB = getDate(b);
           return dateB.localeCompare(dateA);
         });
 
@@ -90,7 +100,16 @@ export default function FocusPage() {
         {!loading && !error && items.length > 0 && (
           <div className="space-y-6">
             {items.map((item, idx) => {
-              const date = item.data.date || item.data.period || '';
+              const getDate = (item: FocusItem): string => {
+                if (item.type === 'learning') {
+                  return item.data.startDate || '';
+                } else if (item.type === 'experience') {
+                  return item.data.startDate || item.data.periodLabel || '';
+                } else {
+                  return item.data.date || '';
+                }
+              };
+              const date = getDate(item);
               return (
                 <div key={`${item.type}-${item.data.id}-${idx}`} className="space-y-2">
                   <div className="flex items-center gap-2">

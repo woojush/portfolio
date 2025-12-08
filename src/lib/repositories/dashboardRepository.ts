@@ -149,7 +149,7 @@ export const dashboardRepository = {
   async addHabitDefinition(habit: Omit<HabitDefinition, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> {
     try {
       const now = new Date().toISOString();
-      const payload: Record<string, unknown> = {
+      const payload: Record<string, any> = {
         name: habit.name,
         createdAt: now,
         updatedAt: now
@@ -170,7 +170,7 @@ export const dashboardRepository = {
     try {
       const docRef = doc(db, 'dashboard_habit_definitions', id);
       
-      const payload: Record<string, unknown> = {
+      const payload: Record<string, any> = {
         updatedAt: new Date().toISOString()
       };
       
@@ -232,7 +232,7 @@ export const dashboardRepository = {
 
   async addHabitLog(log: Omit<HabitLog, 'id' | 'createdAt'>): Promise<string> {
     try {
-      const payload: Record<string, unknown> = {
+      const payload: Record<string, any> = {
         habitId: log.habitId,
         date: log.date,
         createdAt: new Date().toISOString()
@@ -289,7 +289,7 @@ export const dashboardRepository = {
   async addTodo(todo: Omit<TodoItem, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> {
     try {
       const now = new Date().toISOString();
-      const payload: Record<string, unknown> = {
+      const payload: Record<string, any> = {
         ...todo,
         createdAt: now,
         updatedAt: now
@@ -314,7 +314,7 @@ export const dashboardRepository = {
     try {
       const docRef = doc(db, 'dashboard_todos', id);
       
-      const payload: Record<string, unknown> = {
+      const payload: Record<string, any> = {
         updatedAt: new Date().toISOString()
       };
       
@@ -441,7 +441,7 @@ export const dashboardRepository = {
   async addGoal(goal: Omit<Goal, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> {
     try {
       const now = new Date().toISOString();
-      const payload: Record<string, unknown> = {
+      const payload: Record<string, any> = {
         type: goal.type,
         period: goal.period,
         title: goal.title,
@@ -464,7 +464,7 @@ export const dashboardRepository = {
     try {
       const docRef = doc(db, 'dashboard_goals', id);
       
-      const payload: Record<string, unknown> = {
+      const payload: Record<string, any> = {
         updatedAt: new Date().toISOString()
       };
       

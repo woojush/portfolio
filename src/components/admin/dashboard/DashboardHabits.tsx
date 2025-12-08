@@ -199,11 +199,12 @@ export function DashboardHabits({ today }: DashboardHabitsProps) {
         setShowAIModal(true);
         
         // Save diagnosis
+        const lastLog = habitLogs.length > 0 ? habitLogs[habitLogs.length - 1] : null;
         await dashboardRepository.saveDiagnosis({
             habitId: selectedHabitId,
             analysis: data.analysis,
-            periodStart: dailyRecords[dailyRecords.length - 1]?.date || today,
-            periodEnd: today
+            lastLogDate: lastLog?.date || today,
+            logCountAtDiagnosis: habitLogs.length
         });
         
         // Refresh diagnosis

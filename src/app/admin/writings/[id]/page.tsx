@@ -34,6 +34,7 @@ export default function AdminWritingsEditorPage() {
   }, [id, isNew]);
 
   async function loadEntry() {
+    if (!id || id === 'new') return;
     try {
       setLoading(true);
       const data = await writingsRepository.getEntryById(id, true);
@@ -56,7 +57,7 @@ export default function AdminWritingsEditorPage() {
         date: entry.date || today,
         summary: entry.summary!,
         content: entry.content!,
-        tags: entry.tags,
+        tags: entry.tags || [],
         public: !draft,
         draft
       };
@@ -64,6 +65,7 @@ export default function AdminWritingsEditorPage() {
       if (isNew) {
         await writingsRepository.create(entryData);
       } else {
+        if (!id) return;
         await writingsRepository.update(id, entryData);
       }
 
@@ -77,6 +79,7 @@ export default function AdminWritingsEditorPage() {
   }
 
   async function handleDelete() {
+    if (!id || id === 'new') return;
     if (!confirm('정말 이 항목을 삭제하시겠습니까?')) return;
     try {
       await writingsRepository.delete(id);
