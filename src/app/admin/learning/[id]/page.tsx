@@ -55,7 +55,7 @@ export default function AdminLearningEditorPage() {
       const entryData: Omit<LearningEntry, 'id' | 'createdAt' | 'updatedAt'> = {
         title: entry.title!,
         subject: entry.subject!,
-        startDate: entry.startDate,
+        startDate: entry.startDate || '',
         endDate: entry.endDate,
         summary: entry.summary!,
         content: entry.content!,
