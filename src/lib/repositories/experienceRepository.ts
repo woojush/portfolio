@@ -21,15 +21,15 @@ function docToEntry(
   docSnap: QueryDocumentSnapshot<DocumentData>
 ): ExperienceItem {
   const data = docSnap.data();
+  // Backward compatibility: periodLabel → title
+  const title = data.title ?? data.periodLabel ?? '';
   return {
     id: docSnap.id,
-    periodLabel: data.periodLabel ?? '',
+    title,
     category: data.category ?? '',
-    role: data.role ?? '',
     startDate: data.startDate ?? '',
     endDate: data.endDate,
     summary: data.summary ?? '',
-    learnings: Array.isArray(data.learnings) ? data.learnings : [],
     images: Array.isArray(data.images) ? data.images : [],
     content: data.content,
     public: data.public ?? false,

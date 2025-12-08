@@ -46,27 +46,13 @@ export default async function ExperienceEntryDetailPage({
             <span className="rounded-full bg-slate-800 px-2.5 py-0.5 text-xs text-slate-300">
               {entry.category}
             </span>
-            <span className="text-xs text-slate-400">{entry.periodLabel}</span>
           </div>
 
-          <h1 className="text-section-title">{entry.periodLabel}</h1>
-          <p className="mt-2 text-sm text-slate-300">역할: {entry.role}</p>
+          <h1 className="text-section-title">{entry.title}</h1>
         </header>
 
         {/* Summary section */}
         <SummarySection summary={entry.summary} />
-
-        {/* Learnings */}
-        {entry.learnings.length > 0 && (
-          <div className="mt-8 space-y-2">
-            <h2 className="text-sm font-semibold text-slate-200">배운 점</h2>
-            <ul className="list-disc space-y-1 pl-4 text-sm text-slate-300">
-              {entry.learnings.map((learning, idx) => (
-                <li key={idx}>{learning}</li>
-              ))}
-            </ul>
-          </div>
-        )}
 
         {/* Images */}
         {entry.images && entry.images.length > 0 && (

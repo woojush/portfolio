@@ -18,16 +18,13 @@ export function ExperienceCard({ item }: ExperienceCardProps) {
       {/* 헤더 (그라데이션 배경) */}
       <div className="h-32 bg-gradient-to-br from-blue-500 to-blue-600 p-5 flex flex-col justify-end">
         <h3 className="text-lg font-bold text-white line-clamp-2">
-          {item.periodLabel}
+          {item.title}
         </h3>
       </div>
       
       {/* 본문 */}
       <div className="flex-1 p-5 flex flex-col justify-between">
         <div className="space-y-3">
-          <p className="text-xs font-medium text-slate-600">
-            역할: {item.role}
-          </p>
           <p className="text-sm text-slate-700 line-clamp-3">
             {item.summary}
           </p>
@@ -35,7 +32,7 @@ export function ExperienceCard({ item }: ExperienceCardProps) {
         
         {/* 하단 정보 */}
         <div className="mt-4 flex items-center justify-between text-xs text-slate-500 pt-4 border-t border-slate-200">
-          <span>{item.role}</span>
+          <span>{item.category}</span>
         </div>
       </div>
     </Link>

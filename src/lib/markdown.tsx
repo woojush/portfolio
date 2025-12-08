@@ -53,6 +53,38 @@ export function MarkdownRenderer({ content, className }: MarkdownRendererProps) 
       <ReactMarkdown
         remarkPlugins={[remarkGfm, remarkMath, remarkBreaks]}
         rehypePlugins={[[rehypeKatex, { throwOnError: false }]]}
+        components={{
+          h1: ({ children }) => <h1 className="mb-4 mt-6 text-2xl font-bold text-slate-100">{children}</h1>,
+          h2: ({ children }) => <h2 className="mb-3 mt-5 text-xl font-semibold text-slate-200">{children}</h2>,
+          h3: ({ children }) => <h3 className="mb-2 mt-4 text-lg font-semibold text-slate-200">{children}</h3>,
+          p: ({ children }) => <p className="mb-4 leading-relaxed text-slate-300">{children}</p>,
+          ul: ({ children }) => <ul className="mb-4 ml-6 list-disc space-y-1 text-slate-300">{children}</ul>,
+          ol: ({ children }) => <ol className="mb-4 ml-6 list-decimal space-y-1 text-slate-300">{children}</ol>,
+          li: ({ children }) => <li className="text-slate-300">{children}</li>,
+          strong: ({ children }) => <strong className="font-semibold text-slate-100">{children}</strong>,
+          em: ({ children }) => <em className="italic text-slate-200">{children}</em>,
+          code: ({ children, className }) => {
+            const isInline = !className;
+            return isInline ? (
+              <code className="rounded bg-slate-800 px-1.5 py-0.5 text-xs text-warmBeige">{children}</code>
+            ) : (
+              <code className="block rounded-lg bg-slate-900 p-3 text-xs text-slate-300">{children}</code>
+            );
+          },
+          blockquote: ({ children }) => (
+            <blockquote className="my-4 border-l-4 border-warmBeige/50 bg-slate-900/50 pl-4 italic text-slate-400">
+              {children}
+            </blockquote>
+          ),
+          a: ({ children, href }) => (
+            <a href={href} className="text-blue-400 hover:text-blue-300 underline" target="_blank" rel="noopener noreferrer">
+              {children}
+            </a>
+          ),
+          img: ({ src, alt }) => (
+            <img src={src} alt={alt} className="rounded-lg max-w-full" />
+          ),
+        }}
       >
         {content}
       </ReactMarkdown>

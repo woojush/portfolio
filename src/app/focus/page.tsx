@@ -38,7 +38,7 @@ export default function FocusPage() {
             if (item.type === 'learning') {
               return item.data.startDate || '';
             } else {
-              return item.data.startDate || item.data.periodLabel || '';
+              return item.data.startDate || '';
             }
           };
           const dateA = getDate(a);
@@ -96,7 +96,7 @@ export default function FocusPage() {
                 if (item.type === 'learning') {
                   return item.data.startDate || '';
                 } else {
-                  return item.data.startDate || item.data.periodLabel || '';
+                  return item.data.startDate || item.data.title || '';
                 }
               };
               const date = getDate(item);

@@ -19,13 +19,11 @@ export default function AdminExperienceEditorPage() {
   const [existingCategories, setExistingCategories] = useState<string[]>([]);
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
   const [item, setItem] = useState<Partial<ExperienceItem>>({
-    periodLabel: '',
+    title: '',
     category: '',
-    role: '',
     startDate: '',
     endDate: '',
     summary: '',
-    learnings: [],
     images: [],
     content: '',
     public: false,
@@ -67,13 +65,11 @@ export default function AdminExperienceEditorPage() {
     try {
       setSaving(true);
       const itemData: Omit<ExperienceItem, 'id' | 'createdAt' | 'updatedAt'> = {
-        periodLabel: item.periodLabel!,
+        title: item.title!,
         category: item.category!,
-        role: item.role!,
         startDate: item.startDate!,
         endDate: item.endDate,
         summary: item.summary!,
-        learnings: item.learnings || [],
         images: item.images || [],
         content: item.content || '',
         public: !draft,
@@ -169,17 +165,17 @@ export default function AdminExperienceEditorPage() {
           <div className="space-y-4">
             <div>
               <label
-                htmlFor="period-label-input"
+                htmlFor="title-input"
                 className="mb-1 block text-xs font-medium text-slate-300 cursor-text"
               >
-                Period Label *
+                Title *
               </label>
               <input
-                id="period-label-input"
+                id="title-input"
                 type="text"
-                value={item.periodLabel || ''}
+                value={item.title || ''}
                 onChange={(e) =>
-                  setItem({ ...item, periodLabel: e.target.value })
+                  setItem({ ...item, title: e.target.value })
                 }
                 onClick={(e) => e.currentTarget.select()}
                 onFocus={(e) => e.currentTarget.select()}
@@ -238,25 +234,6 @@ export default function AdminExperienceEditorPage() {
               </div>
             </div>
 
-            <div>
-              <label
-                htmlFor="role-input"
-                className="mb-1 block text-xs font-medium text-slate-300 cursor-text"
-              >
-                Role *
-              </label>
-              <input
-                id="role-input"
-                type="text"
-                value={item.role || ''}
-                onChange={(e) => setItem({ ...item, role: e.target.value })}
-                onClick={(e) => e.currentTarget.select()}
-                onFocus={(e) => e.currentTarget.select()}
-                className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 focus:border-warmBeige focus:outline-none focus:ring-1 focus:ring-warmBeige/50 cursor-text"
-                placeholder="역할을 입력하세요"
-              />
-            </div>
-
             <div className="grid grid-cols-2 gap-2">
               <div>
                 <label
@@ -312,29 +289,6 @@ export default function AdminExperienceEditorPage() {
                 rows={3}
                 className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 focus:border-warmBeige focus:outline-none focus:ring-1 focus:ring-warmBeige/50 cursor-text resize-y"
                 placeholder="요약을 입력하세요"
-              />
-            </div>
-
-            <div>
-              <label
-                htmlFor="learnings-input"
-                className="mb-1 block text-xs font-medium text-slate-300 cursor-text"
-              >
-                Learnings (줄바꿈으로 구분)
-              </label>
-              <textarea
-                id="learnings-input"
-                value={item.learnings?.join('\n') || ''}
-                onChange={(e) => {
-                  const learnings = e.target.value
-                    .split('\n')
-                    .map((l) => l.trim())
-                    .filter((l) => l.length > 0);
-                  setItem({ ...item, learnings });
-                }}
-                rows={5}
-                className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 focus:border-warmBeige focus:outline-none focus:ring-1 focus:ring-warmBeige/50 cursor-text resize-y"
-                placeholder="한 줄씩 입력하세요"
               />
             </div>
 

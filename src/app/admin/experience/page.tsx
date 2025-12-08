@@ -84,7 +84,7 @@ export default function AdminExperiencePage() {
                   <div className="flex-1">
                     <div className="mb-1 flex items-center gap-2 flex-wrap">
                       <h3 className="text-sm font-semibold text-slate-100 md:text-base">
-                        {item.periodLabel}
+                        {item.title}
                       </h3>
                       <span className="rounded-full bg-slate-800 px-2 py-0.5 text-[10px] text-slate-300">
                         {item.category}
@@ -100,16 +100,7 @@ export default function AdminExperiencePage() {
                         </span>
                       )}
                     </div>
-                    <p className="mt-1 text-[11px] text-slate-400">
-                      역할: {item.role}
-                    </p>
                     <p className="mt-2 text-xs text-slate-300">{item.summary}</p>
-                    {item.learnings && item.learnings.length > 0 && (
-                      <div className="mt-2 text-xs text-slate-400">
-                        주요 배움: {item.learnings.slice(0, 3).join(', ')}
-                        {item.learnings.length > 3 && ` 외 ${item.learnings.length - 3}개`}
-                      </div>
-                    )}
                   </div>
                   <Link
                     href={`/admin/experience/${item.id}`}

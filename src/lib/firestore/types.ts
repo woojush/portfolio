@@ -17,13 +17,11 @@ export interface LearningEntry {
 
 export interface ExperienceItem {
   id: string;
-  periodLabel: string; // "2024.01 - 2024.03"
+  title: string; // "2024.01 - 2024.03" (이전 periodLabel)
   category: string; // "알바", "동아리", "프로젝트" 등
-  role: string;
   startDate: string; // "YYYY-MM-DD"
   endDate?: string; // "YYYY-MM-DD"
   summary: string;
-  learnings: string[];
   images: string[]; // URL list
   content?: string; // markdown (optional)
   public: boolean;
