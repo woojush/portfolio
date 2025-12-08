@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { experienceRepository } from '@/lib/repositories/experienceRepository';
 import type { ExperienceItem } from '@/lib/firestore/types';
-import { TiptapEditor } from '@/components/admin/TiptapEditor';
+import { MarkdownEditor } from '@/components/admin/MarkdownEditor';
 
 export default function AdminExperienceEditorPage() {
   const params = useParams();
@@ -156,9 +156,9 @@ export default function AdminExperienceEditorPage() {
 
       {/* Editor layout */}
       <div className="flex flex-1 overflow-hidden">
-        {/* Left: Rich Text Editor */}
+        {/* Left: Markdown Editor */}
         <div className="flex-1 overflow-auto p-4">
-          <TiptapEditor
+          <MarkdownEditor
             value={item.content || ''}
             onChange={(value) => setItem({ ...item, content: value })}
           />
