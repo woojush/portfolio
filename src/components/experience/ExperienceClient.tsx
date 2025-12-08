@@ -63,11 +63,15 @@ export function ExperienceClient({ items }: ExperienceClientProps) {
           </div>
         )}
 
-        <div className="mt-6 space-y-4">
+        <div className="mt-6">
           {filtered.length === 0 ? (
             <p className="text-sm text-slate-400">해당 카테고리에 기록이 없습니다.</p>
           ) : (
-            filtered.map((item) => <ExperienceCard key={item.id} item={item} />)
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {filtered.map((item) => (
+                <ExperienceCard key={item.id} item={item} />
+              ))}
+            </div>
           )}
         </div>
       </section>

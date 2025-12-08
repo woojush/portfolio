@@ -77,21 +77,35 @@ export function LearningClient({ entries, subjects, initialSubject }: LearningCl
           </div>
         )}
 
-        {/* Subject 카드 그리드 */}
+        {/* Subject 카드 그리드 또는 Entry 카드 그리드 */}
         <div className="mt-6">
-          {filteredSubjects.length === 0 ? (
-            <p className="text-sm text-slate-400">해당 카테고리에 기록이 없습니다.</p>
+          {initialSubject ? (
+            // 특정 subject가 선택된 경우: Entry 카드 표시
+            entries.length === 0 ? (
+              <p className="text-sm text-slate-400">해당 카테고리에 기록이 없습니다.</p>
+            ) : (
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {entries.map((entry) => (
+                  <LearningEntryCard key={entry.id} entry={entry} />
+                ))}
+              </div>
+            )
           ) : (
-            <div className="grid gap-4 md:grid-cols-2">
-              {filteredSubjects.map((subject) => (
-                <LearningSubjectCard
-                  key={subject.subject}
-                  subject={subject.subject}
-                  count={subject.count}
-                  latestDate={subject.latestDate}
-                />
-              ))}
-            </div>
+            // 전체 보기: Subject 카드 표시
+            filteredSubjects.length === 0 ? (
+              <p className="text-sm text-slate-400">해당 카테고리에 기록이 없습니다.</p>
+            ) : (
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {filteredSubjects.map((subject) => (
+                  <LearningSubjectCard
+                    key={subject.subject}
+                    subject={subject.subject}
+                    count={subject.count}
+                    latestDate={subject.latestDate}
+                  />
+                ))}
+              </div>
+            )
           )}
         </div>
       </section>

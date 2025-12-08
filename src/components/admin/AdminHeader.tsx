@@ -12,7 +12,8 @@ export function AdminHeader() {
   // 현재 페이지에 따라 제목 결정
   const getPageTitle = () => {
     if (pathname?.startsWith('/admin/dashboard')) return 'Dashboard';
-    if (pathname?.startsWith('/admin/archive') || pathname?.startsWith('/admin/learning') || pathname?.startsWith('/admin/experience')) return '아카이브 관리';
+    if (pathname?.startsWith('/admin/learning')) return 'Learning 관리';
+    if (pathname?.startsWith('/admin/experience')) return 'Experience 관리';
     if (pathname?.startsWith('/admin/journey')) return 'Journey 관리';
     if (pathname?.startsWith('/admin/homepage')) return '홈페이지 설정';
     return 'Dashboard';
@@ -62,10 +63,16 @@ export function AdminHeader() {
           홈페이지 설정
         </Link>
         <Link 
-          href="/admin/archive" 
+          href="/admin/learning" 
           className="rounded-lg bg-slate-800 px-4 py-2 text-slate-200 hover:bg-slate-700 transition"
         >
-          아카이브 관리
+          Learning 관리
+        </Link>
+        <Link 
+          href="/admin/experience" 
+          className="rounded-lg bg-slate-800 px-4 py-2 text-slate-200 hover:bg-slate-700 transition"
+        >
+          Experience 관리
         </Link>
         <button
           onClick={handleLogout}
