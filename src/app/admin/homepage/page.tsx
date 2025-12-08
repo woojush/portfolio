@@ -216,9 +216,9 @@ export default function HomePageSettingsPage() {
             </p>
           </div>
 
-        {/* Form */}
-        <div className="space-y-6">
-          {/* Background Settings - Collapsible */}
+          {/* Form */}
+          <div className="space-y-6">
+            {/* Background Settings - Collapsible */}
           <div className="overflow-hidden rounded-lg border border-slate-800 bg-slate-900/60">
             <button
               type="button"
@@ -397,10 +397,9 @@ export default function HomePageSettingsPage() {
               </div>
             )}
           </div>
-          {/* Name */}
 
-          {/* Name */}
-          <div className="rounded-lg border border-slate-800 bg-slate-900/50 p-4">
+            {/* Name */}
+            <div className="rounded-lg border border-slate-800 bg-slate-900/50 p-4">
             <label className="mb-2 block text-sm font-semibold text-slate-200">
               이름 <span className="text-red-400">*</span>
             </label>
@@ -413,8 +412,8 @@ export default function HomePageSettingsPage() {
             />
           </div>
 
-          {/* Slogan */}
-          <div className="rounded-lg border border-slate-800 bg-slate-900/50 p-4">
+            {/* Slogan */}
+            <div className="rounded-lg border border-slate-800 bg-slate-900/50 p-4">
             <label className="mb-2 block text-sm font-semibold text-slate-200">
               한 줄 소개 <span className="text-red-400">*</span>
             </label>
@@ -427,8 +426,8 @@ export default function HomePageSettingsPage() {
             />
           </div>
 
-          {/* Intro Paragraphs */}
-          <div className="rounded-lg border border-slate-800 bg-slate-900/50 p-4">
+            {/* Intro Paragraphs */}
+            <div className="rounded-lg border border-slate-800 bg-slate-900/50 p-4">
             <div className="mb-3 flex items-center justify-between">
               <label className="block text-sm font-semibold text-slate-200">
                 자기소개 문단
@@ -465,8 +464,8 @@ export default function HomePageSettingsPage() {
             </div>
           </div>
 
-          {/* Additional Content */}
-          <div className="rounded-lg border border-slate-800 bg-slate-900/50 p-4">
+            {/* Additional Content */}
+            <div className="rounded-lg border border-slate-800 bg-slate-900/50 p-4">
             <label className="mb-2 block text-sm font-semibold text-slate-200">
               추가 내용 (마크다운)
             </label>
@@ -481,18 +480,18 @@ export default function HomePageSettingsPage() {
               선택사항입니다. 홈 페이지 하단에 표시됩니다.
             </p>
           </div>
-          {/* Save Button */}
-          <div className="flex justify-end gap-2">
-            <button
-              type="button"
-              onClick={handleSave}
-              disabled={saving}
-              className="rounded-full bg-warmBeige px-6 py-2 text-sm font-medium text-slate-900 transition hover:bg-warmBeige/90 disabled:opacity-50"
-            >
-              {saving ? '저장 중...' : '저장'}
-            </button>
+            {/* Save Button */}
+            <div className="flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={handleSave}
+                disabled={saving}
+                className="rounded-full bg-warmBeige px-6 py-2 text-sm font-medium text-slate-900 transition hover:bg-warmBeige/90 disabled:opacity-50"
+              >
+                {saving ? '저장 중...' : '저장'}
+              </button>
+            </div>
           </div>
-        </div>
         </div>
       </div>
     </div>
