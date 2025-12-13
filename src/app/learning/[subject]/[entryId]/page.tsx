@@ -8,6 +8,7 @@ import { MarkdownRenderer } from '@/lib/markdown';
 import { SummarySection } from '@/components/shared/SummarySection';
 import { TableOfContents } from '@/components/shared/TableOfContents';
 import { AuthorProfile } from '@/components/shared/AuthorProfile';
+import { DeleteButton } from '@/components/shared/DeleteButton';
 import { cookies } from 'next/headers';
 import { hasAdminSession } from '@/lib/adminSessionStore';
 import Image from 'next/image';
@@ -54,12 +55,19 @@ export default async function LearningEntryDetailPage({
             ← {category || entry.subject} 목록으로
           </Link>
           {isAdmin && (
-            <Link
-              href={`/admin/learning/${entryId}?from=admin&category=${category || 'all'}`}
-              className="rounded-full bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700"
-            >
-              편집
-            </Link>
+            <div className="flex items-center gap-2">
+              <Link
+                href={`/admin/learning/${entryId}?from=admin&category=${category || 'all'}`}
+                className="rounded-full bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700"
+              >
+                편집
+              </Link>
+              <DeleteButton
+                entryId={entryId}
+                apiPath="learning"
+                redirectPath={backUrl}
+              />
+            </div>
           )}
         </div>
 
