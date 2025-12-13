@@ -49,7 +49,8 @@ export default function AdminLearningEditorPage() {
       // 새 항목일 때 오늘 날짜로 자동 설정
       const today = new Date().toISOString().split('T')[0];
       setEntry(prev => ({ ...prev, startDate: today }));
-    } else {
+      setLoading(false);
+    } else if (id) {
       loadEntry();
     }
   }, [id, isNew]);
@@ -65,6 +66,7 @@ export default function AdminLearningEditorPage() {
   }
 
   async function loadEntry() {
+    if (!id || isNew) return;
     try {
       setLoading(true);
       const data = await learningRepository.getEntryById(id, true);
