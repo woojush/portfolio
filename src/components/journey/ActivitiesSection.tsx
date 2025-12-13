@@ -45,9 +45,15 @@ export function ActivitiesSection() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    let isMounted = true;
+    
     async function load() {
       try {
         const data = await activitiesRepository.getPublicEntries();
+        
+        // 컴포넌트가 마운트된 상태인지 확인
+        if (!isMounted) return;
+        
         // 날짜 기준으로 내림차순 정렬 (최신순)
         // date 형식: "YY.MM" (예: "24.06")
         const sorted = [...data].sort((a, b) => {
@@ -60,15 +66,27 @@ export function ActivitiesSection() {
           const dateB = parseDate(b.date);
           return dateB - dateA; // 내림차순 (최신순)
         });
-        setActivities(sorted);
+        
+        if (isMounted) {
+          setActivities(sorted);
+        }
       } catch (err) {
-        setError('활동 기록을 불러오지 못했습니다.');
         console.error('Activities fetch error:', err);
+        if (isMounted) {
+          setError('활동 기록을 불러오지 못했습니다.');
+        }
       } finally {
-        setLoading(false);
+        if (isMounted) {
+          setLoading(false);
+        }
       }
     }
+    
     load();
+    
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   if (loading) {
