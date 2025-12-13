@@ -6,6 +6,7 @@
 import { useEffect, useState } from 'react';
 import { getJourneyItems, type JourneyItem } from '@/lib/firestore/journey';
 import { JourneyTimeline } from './JourneyTimeline';
+import { ActivitiesSection } from './ActivitiesSection';
 
 export function JourneySection() {
   const [items, setItems] = useState<JourneyItem[]>([]);
@@ -55,6 +56,9 @@ export function JourneySection() {
       )}
 
       {!loading && !error && items.length > 0 && <JourneyTimeline items={items} />}
+      
+      {/* Activities Section */}
+      <ActivitiesSection />
     </section>
   );
 }

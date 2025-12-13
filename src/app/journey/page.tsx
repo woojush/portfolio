@@ -2,6 +2,7 @@
 
 import { journeyRepository } from '@/lib/repositories/journeyRepository';
 import { JourneyList } from '@/components/journey/JourneyList';
+import { ActivitiesSection } from '@/components/journey/ActivitiesSection';
 
 export default async function JourneyPage() {
   const items = await journeyRepository.getPublicEntries();
@@ -19,6 +20,9 @@ export default async function JourneyPage() {
           <JourneyList items={items} />
         </div>
       </section>
+      
+      {/* Activities Section */}
+      <ActivitiesSection />
     </main>
   );
 }
