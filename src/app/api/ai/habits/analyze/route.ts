@@ -16,7 +16,11 @@ export async function POST(req: Request) {
     // 데이터 준비 및 통계 계산
     // If habitId is present but habitDefinitions is missing, assume 1 habit
     const totalHabits = habitDefinitions?.length || (habitId ? 1 : 0);
-    const allLogs = habitLogs || [];
+    let allLogs = habitLogs || [];
+    // 개별 습관 분석일 경우 해당 습관의 로그만 필터링
+    if (habitId) {
+      allLogs = allLogs.filter((l: any) => l.habitId === habitId);
+    }
     // 성공한 기록만 필터링 (completed가 false가 아닌 것)
     const successfulLogs = allLogs.filter((l: any) => l.completed !== false);
     const totalAttempts = allLogs.length;
@@ -52,9 +56,13 @@ export async function POST(req: Request) {
 
     dailyRecords?.forEach((record: any) => {
       const logsOnDate = habitLogsByDate.get(record.date) || [];
+      // 개별 습관 분석일 경우 해당 습관의 로그만 필터링
+      const relevantLogs = habitId 
+        ? logsOnDate.filter((l: any) => l.habitId === habitId)
+        : logsOnDate;
       // 해당 날짜에 '성공한' 습관이 하나라도 있으면 달성으로 간주 (상관관계 분석용)
       // 또는 개별 습관 분석일 경우 해당 습관의 성공 여부 확인
-      const habitAchieved = logsOnDate.some((l: any) => l.completed !== false);
+      const habitAchieved = relevantLogs.some((l: any) => l.completed !== false);
 
       // 수면 시간 계산
       let sleepDuration: number | undefined;

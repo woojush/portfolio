@@ -178,12 +178,28 @@ export function DashboardHabits({ today }: DashboardHabitsProps) {
         const habitDef = habitDefinitions.find(h => h.id === selectedHabitId);
         if (!habitDef) return;
 
-        // Prepare data for AI
+        // Prepare data for AI (same format as overall stats)
         const analysisData = {
             habitId: selectedHabitId,
-            habitDefinitions: [habitDef], // Pass current habit as definition
-            habitLogs: habitLogs,
-            dailyRecords: dailyRecords
+            habitDefinitions: [habitDef].map(h => ({ id: h.id, name: h.name, unit: h.unit })),
+            habitLogs: habitLogs.map(log => ({
+                habitId: log.habitId,
+                date: log.date,
+                value: log.value,
+                notes: log.notes,
+                completed: log.completed
+            })),
+            dailyRecords: dailyRecords.map(record => ({
+                date: record.date,
+                sleepStart: record.sleepStart,
+                sleepEnd: record.sleepEnd,
+                moodMorning: record.moodMorning,
+                moodNoon: record.moodNoon,
+                moodEvening: record.moodEvening,
+                weather: record.weather,
+                temperature: record.temperature,
+                memo: record.memo
+            }))
         };
 
         const response = await fetch('/api/ai/habits/analyze', {
