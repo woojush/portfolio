@@ -40,7 +40,7 @@ export function SummarySection({ summary }: SummarySectionProps) {
             expanded ? 'max-h-none opacity-100' : 'max-h-0 opacity-0'
           ].join(' ')}
         >
-          <p className="text-sm leading-relaxed text-slate-300">{summary}</p>
+          <p className="text-sm leading-relaxed text-black">{summary}</p>
         </div>
       </div>
 
