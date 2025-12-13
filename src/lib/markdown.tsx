@@ -101,7 +101,7 @@ export function MarkdownRenderer({ content, className }: MarkdownRendererProps) 
               </h3>
             );
           },
-          p: ({ children }) => <p className="mb-4 leading-relaxed" style={{ color: 'var(--card-bg)' }}>{children}</p>,
+          p: ({ children }) => <p className="mb-4 leading-relaxed text-black">{children}</p>,
           ul: ({ children }) => <ul className="mb-4 ml-6 list-disc space-y-1 text-slate-300">{children}</ul>,
           ol: ({ children }) => <ol className="mb-4 ml-6 list-decimal space-y-1 text-slate-300">{children}</ol>,
           li: ({ children }) => <li className="text-slate-300">{children}</li>,
