@@ -9,6 +9,10 @@ export function addAdminSession(_: string) {
 
 export function hasAdminSession(token: string | undefined): boolean {
   const secret = process.env.ADMIN_SECRET;
+  if (!secret) {
+    console.error('ADMIN_SECRET environment variable is not set');
+    return false;
+  }
   return verifyAdminToken(token, secret);
 }
 

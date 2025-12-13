@@ -112,29 +112,36 @@ export default function AdminLearningEditorPage() {
         const response = await fetch('/api/admin/learning', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
           body: JSON.stringify(entryData),
         });
         if (!response.ok) {
-          const error = await response.json();
-          throw new Error(error.error || 'Failed to create entry');
+          const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+          const errorMessage = errorData.error || `HTTP ${response.status}: Failed to create entry`;
+          console.error('Create error:', errorMessage, errorData);
+          throw new Error(errorMessage);
         }
       } else {
         const response = await fetch(`/api/admin/learning/${id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
           body: JSON.stringify(entryData),
         });
         if (!response.ok) {
-          const error = await response.json();
-          throw new Error(error.error || 'Failed to update entry');
+          const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+          const errorMessage = errorData.error || `HTTP ${response.status}: Failed to update entry`;
+          console.error('Update error:', errorMessage, errorData);
+          throw new Error(errorMessage);
         }
       }
 
       router.push(backUrl);
       router.refresh();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving entry:', error);
-      alert('저장 중 오류가 발생했습니다.');
+      const errorMessage = error?.message || '저장 중 오류가 발생했습니다.';
+      alert(errorMessage);
     } finally {
       setSaving(false);
     }
