@@ -28,6 +28,12 @@ function extractHeadings(content: string): Heading[] {
     const match = line.match(/^(#{1,6})\s+(.+)$/);
     if (match) {
       const level = match[1].length;
+      
+      // H1(#)과 H2(##)만 목차에 표시
+      if (level > 2) {
+        continue;
+      }
+      
       const text = match[2].trim();
       
       // Use shared ID generation function
