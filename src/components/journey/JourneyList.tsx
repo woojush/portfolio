@@ -109,7 +109,7 @@ export function JourneyList({ items }: JourneyListProps) {
               </p>
             )}
             {current.description && (
-              <p className="leading-relaxed" style={{ color: '#94a3b8', fontSize: 14 }}>
+              <p className="leading-relaxed whitespace-pre-wrap" style={{ color: '#94a3b8', fontSize: 14 }}>
                 {current.description}
               </p>
             )}
@@ -169,7 +169,7 @@ export function JourneyList({ items }: JourneyListProps) {
                   </p>
                 )}
                 {item.description && (
-                  <p className="leading-relaxed" style={{ fontSize: 14, color: '#94a3b8' }}>
+                  <p className="leading-relaxed whitespace-pre-wrap" style={{ fontSize: 14, color: '#94a3b8' }}>
                     {item.description}
                   </p>
                 )}

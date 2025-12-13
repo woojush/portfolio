@@ -444,7 +444,7 @@ export default function AdminJourneyPage() {
                         </button>
                       </div>
                     </div>
-                    <p className="text-sm text-slate-200">{item.description}</p>
+                    <p className="text-sm text-slate-200 whitespace-pre-wrap">{item.description}</p>
                   </article>
                 ))}
               </div>

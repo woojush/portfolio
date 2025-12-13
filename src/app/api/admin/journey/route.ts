@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import { hasAdminSession } from '@/lib/adminSessionStore';
 import { journeyRepository } from '@/lib/repositories/journeyRepository';
 
@@ -28,7 +29,7 @@ function validateBody(body: any) {
     }
   });
 
-  const optionalString = ['organization', 'location', 'logoUrl', 'imageUrl'];
+  const optionalString = ['organization', 'affiliation', 'location', 'logoUrl', 'imageUrl'];
   optionalString.forEach((key) => {
     if (body[key] !== undefined) {
       parsed[key] = typeof body[key] === 'string' ? body[key] : '';
@@ -126,10 +127,14 @@ export async function POST(req: Request) {
   }
   try {
     const id = await journeyRepository.create(parsed as any);
+    // 캐시 무효화
+    revalidatePath('/journey');
+    revalidatePath('/');
     return NextResponse.json({ id }, { status: 201 });
   } catch (error) {
     console.error('Error creating journey item:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
+
 

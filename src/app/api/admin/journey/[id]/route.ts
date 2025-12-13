@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import { hasAdminSession } from '@/lib/adminSessionStore';
 import { journeyRepository } from '@/lib/repositories/journeyRepository';
 
@@ -29,6 +30,7 @@ export async function PUT(
     'title',
     'description',
     'organization',
+    'affiliation',
     'location',
     'logoUrl',
     'imageUrl',
@@ -117,6 +119,9 @@ export async function PUT(
 
   try {
     await journeyRepository.update(id, updates as any);
+    // 캐시 무효화
+    revalidatePath('/journey');
+    revalidatePath('/');
     return NextResponse.json({ ok: true });
   } catch (error) {
     console.error('Error updating journey item:', error);
@@ -135,10 +140,14 @@ export async function DELETE(
   const id = params.id;
   try {
     await journeyRepository.delete(id);
+    // 캐시 무효화
+    revalidatePath('/journey');
+    revalidatePath('/');
     return NextResponse.json({ ok: true });
   } catch (error) {
     console.error('Error deleting journey item:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
+
 

@@ -27,7 +27,7 @@ export function JourneyTimeline({ items }: JourneyTimelineProps) {
                 {item.title}
               </p>
             )}
-            <p className="text-sm text-slate-300 md:text-base">
+            <p className="text-sm text-slate-300 md:text-base whitespace-pre-wrap">
               {item.description}
             </p>
           </div>
