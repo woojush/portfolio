@@ -255,7 +255,20 @@ export default function AdminJourneyPage() {
       setActivitiesLoading(true);
       setActivitiesError(null);
       const data = await fetchJson('/api/admin/activities');
-      setActivities(data.items ?? []);
+      const items = data.items ?? [];
+      // 날짜 기준으로 내림차순 정렬 (최신순)
+      // date 형식: "YY.MM" (예: "24.06")
+      const sorted = [...items].sort((a: Activity, b: Activity) => {
+        // "YY.MM" 형식을 파싱하여 비교
+        const parseDate = (dateStr: string): number => {
+          const [year, month] = dateStr.split('.').map(Number);
+          return (year || 0) * 100 + (month || 0);
+        };
+        const dateA = parseDate(a.date);
+        const dateB = parseDate(b.date);
+        return dateB - dateA; // 내림차순 (최신순)
+      });
+      setActivities(sorted);
     } catch (err: any) {
       console.error(err);
       if (err?.message === 'Unauthorized') {
