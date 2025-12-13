@@ -61,9 +61,18 @@ export async function DELETE(
     const cookieStore = await cookies();
     const sessionCookie = cookieStore.get('admin_session')?.value;
     
-    if (!sessionCookie || !hasAdminSession(sessionCookie)) {
+    if (!sessionCookie) {
+      console.error('No admin_session cookie found');
       return NextResponse.json(
-        { error: 'Unauthorized' },
+        { error: 'Unauthorized: No session cookie' },
+        { status: 401 }
+      );
+    }
+    
+    if (!hasAdminSession(sessionCookie)) {
+      console.error('Invalid admin session:', sessionCookie.substring(0, 20) + '...');
+      return NextResponse.json(
+        { error: 'Unauthorized: Invalid session' },
         { status: 401 }
       );
     }

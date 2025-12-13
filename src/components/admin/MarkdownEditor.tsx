@@ -24,6 +24,8 @@ export function MarkdownEditor({
   const [showPreview, setShowPreview] = useState(false);
   const [splitView, setSplitView] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const lastNewlineCountRef = useRef(0);
+  const lastEnterTimeRef = useRef(0);
 
   function insertText(before: string, after: string = '') {
     const textarea = textareaRef.current;
@@ -182,6 +184,57 @@ export function MarkdownEditor({
               ref={textareaRef}
               value={value}
               onChange={(e) => onChange(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  const textarea = e.currentTarget;
+                  const cursorPos = textarea.selectionStart;
+                  const textBefore = value.substring(0, cursorPos);
+                  const textAfter = value.substring(cursorPos);
+                  
+                  // 최근 4줄이 모두 빈 줄인지 확인
+                  const lines = textBefore.split('\n');
+                  const recentLines = lines.slice(-4);
+                  const allEmpty = recentLines.length >= 4 && recentLines.slice(-4).every(line => line.trim() === '');
+                  
+                  // 엔터 네 번 연속 입력 감지
+                  const now = Date.now();
+                  if (allEmpty) {
+                    // 1초 이내에 연속 입력인 경우 카운트 증가
+                    if (now - lastEnterTimeRef.current < 1000) {
+                      lastNewlineCountRef.current++;
+                    } else {
+                      lastNewlineCountRef.current = 1;
+                    }
+                    
+                    if (lastNewlineCountRef.current >= 4) {
+                      e.preventDefault();
+                      // 현재 위치에 blockquote 형식 추가 (들여쓰기 효과)
+                      const beforeText = textBefore.trimEnd();
+                      const newText = beforeText + '\n> ';
+                      onChange(newText + textAfter);
+                      
+                      setTimeout(() => {
+                        textarea.focus();
+                        const newPos = newText.length;
+                        textarea.setSelectionRange(newPos, newPos);
+                      }, 0);
+                      
+                      lastNewlineCountRef.current = 0;
+                      lastEnterTimeRef.current = 0;
+                      return;
+                    }
+                  } else {
+                    lastNewlineCountRef.current = 0;
+                  }
+                  lastEnterTimeRef.current = now;
+                } else {
+                  // 다른 키 입력 시 카운트 리셋
+                  if (e.key !== 'Backspace' && e.key !== 'Delete') {
+                    lastNewlineCountRef.current = 0;
+                    lastEnterTimeRef.current = 0;
+                  }
+                }
+              }}
               placeholder={placeholder}
               className="h-full w-full resize-none border-0 bg-transparent p-4 text-sm text-slate-100 placeholder-slate-500 focus:outline-none"
               style={{ minHeight: '400px' }}

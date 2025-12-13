@@ -116,7 +116,7 @@ export function MarkdownRenderer({ content, className }: MarkdownRendererProps) 
             );
           },
           blockquote: ({ children }) => (
-            <blockquote className="my-4 border-l-4 border-warmBeige/50 bg-slate-900/50 pl-4 italic text-slate-400">
+            <blockquote className="my-4 border-l-4 border-slate-300 bg-slate-100 pl-4 text-black">
               {children}
             </blockquote>
           ),
