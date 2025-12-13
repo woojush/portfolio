@@ -102,9 +102,9 @@ export function MarkdownRenderer({ content, className }: MarkdownRendererProps) 
             );
           },
           p: ({ children }) => <p className="mb-4 leading-relaxed text-black">{children}</p>,
-          ul: ({ children }) => <ul className="mb-4 ml-6 list-disc space-y-1 text-black" style={{ listStyleColor: 'black' }}>{children}</ul>,
-          ol: ({ children }) => <ol className="mb-4 ml-6 list-decimal space-y-1 text-black" style={{ listStyleColor: 'black' }}>{children}</ol>,
-          li: ({ children }) => <li className="text-black" style={{ color: 'black' }}>{children}</li>,
+          ul: ({ children }) => <ul className="mb-4 ml-6 list-disc space-y-1 text-black [&_li::marker]:text-black">{children}</ul>,
+          ol: ({ children }) => <ol className="mb-4 ml-6 list-decimal space-y-1 text-black [&_li::marker]:text-black">{children}</ol>,
+          li: ({ children }) => <li className="text-black">{children}</li>,
           strong: ({ children }) => <strong className="font-bold text-black">{children}</strong>,
           em: ({ children }) => <em className="italic text-slate-200">{children}</em>,
           code: ({ children, className }) => {
