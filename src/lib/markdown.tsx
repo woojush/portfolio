@@ -126,7 +126,9 @@ export function MarkdownRenderer({ content, className }: MarkdownRendererProps) 
             </a>
           ),
           img: ({ src, alt }) => (
-            <img src={src} alt={alt} className="rounded-lg max-w-full" />
+            <div className="my-4">
+              <img src={src} alt={alt} className="rounded-lg max-w-full w-1/2" />
+            </div>
           ),
         }}
       >
