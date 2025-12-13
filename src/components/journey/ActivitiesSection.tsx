@@ -3,13 +3,14 @@
 // Activities section component - 작은 섹션으로 Journey 아래에 표시
 
 import { useEffect, useState } from 'react';
+import type { ReactElement } from 'react';
 import { activitiesRepository } from '@/lib/repositories/activitiesRepository';
 import type { Activity } from '@/lib/firestore/activities';
 
 // 괄호로 감싸진 텍스트를 회색으로 표시하는 헬퍼 함수
-function renderDescriptionWithGrayParentheses(text: string): (string | JSX.Element)[] {
+function renderDescriptionWithGrayParentheses(text: string): (string | ReactElement)[] {
   // 괄호로 감싸진 부분을 찾아서 회색으로 표시
-  const parts: (string | JSX.Element)[] = [];
+  const parts: (string | ReactElement)[] = [];
   let lastIndex = 0;
   const regex = /\([^)]*\)/g;
   let match;
