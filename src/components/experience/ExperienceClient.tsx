@@ -214,9 +214,10 @@ export function ExperienceClient({ items }: ExperienceClientProps) {
               className={[
                 'rounded-full px-3 py-1 text-xs md:text-sm transition border',
                 filterType === 'category'
-                  ? 'border-slate-400 bg-slate-200 text-slate-700'
+                  ? 'border-slate-400 bg-blue-500'
                   : 'border-slate-300 bg-white text-slate-600 hover:border-slate-400 hover:bg-slate-50'
               ].join(' ')}
+              style={filterType === 'category' ? { color: 'var(--surface-bg)' } : undefined}
             >
               카테고리
             </button>
@@ -230,9 +231,10 @@ export function ExperienceClient({ items }: ExperienceClientProps) {
               className={[
                 'rounded-full px-3 py-1 text-xs md:text-sm transition border',
                 filterType === 'period'
-                  ? 'border-slate-400 bg-slate-200 text-slate-700'
+                  ? 'border-slate-400 bg-blue-500'
                   : 'border-slate-300 bg-white text-slate-600 hover:border-slate-400 hover:bg-slate-50'
               ].join(' ')}
+              style={filterType === 'period' ? { color: 'var(--surface-bg)' } : undefined}
             >
               시기
             </button>
@@ -267,7 +269,7 @@ export function ExperienceClient({ items }: ExperienceClientProps) {
           {filtered.length === 0 ? (
             <p className="text-sm text-slate-400">해당 카테고리에 기록이 없습니다.</p>
           ) : (
-            <div className="grid gap-5 md:grid-cols-3">
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {filtered.map((item) => (
                 <Link
                   key={item.id}
