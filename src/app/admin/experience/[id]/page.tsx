@@ -109,9 +109,25 @@ export default function AdminExperienceEditorPage() {
       };
 
       if (isNew) {
-        await experienceRepository.create(itemData);
+        const response = await fetch('/api/admin/experience', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(itemData),
+        });
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.error || 'Failed to create entry');
+        }
       } else {
-        await experienceRepository.update(id, itemData);
+        const response = await fetch(`/api/admin/experience/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(itemData),
+        });
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.error || 'Failed to update entry');
+        }
       }
 
       router.push(backUrl);

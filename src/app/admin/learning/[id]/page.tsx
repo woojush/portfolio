@@ -107,9 +107,25 @@ export default function AdminLearningEditorPage() {
       };
 
       if (isNew) {
-        await learningRepository.create(entryData);
+        const response = await fetch('/api/admin/learning', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(entryData),
+        });
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.error || 'Failed to create entry');
+        }
       } else {
-        await learningRepository.update(id, entryData);
+        const response = await fetch(`/api/admin/learning/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(entryData),
+        });
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.error || 'Failed to update entry');
+        }
       }
 
       router.push(backUrl);
