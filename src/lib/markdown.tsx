@@ -102,10 +102,10 @@ export function MarkdownRenderer({ content, className }: MarkdownRendererProps) 
             );
           },
           p: ({ children }) => <p className="mb-4 leading-relaxed text-black">{children}</p>,
-          ul: ({ children }) => <ul className="mb-4 ml-6 list-disc space-y-1 text-slate-300">{children}</ul>,
-          ol: ({ children }) => <ol className="mb-4 ml-6 list-decimal space-y-1 text-slate-300">{children}</ol>,
-          li: ({ children }) => <li className="text-slate-300">{children}</li>,
-          strong: ({ children }) => <strong className="font-semibold text-black">{children}</strong>,
+          ul: ({ children }) => <ul className="mb-4 ml-6 list-disc space-y-1">{children}</ul>,
+          ol: ({ children }) => <ol className="mb-4 ml-6 list-decimal space-y-1">{children}</ol>,
+          li: ({ children }) => <li className="text-black">{children}</li>,
+          strong: ({ children }) => <strong className="font-bold text-black">{children}</strong>,
           em: ({ children }) => <em className="italic text-slate-200">{children}</em>,
           code: ({ children, className }) => {
             const isInline = !className;
