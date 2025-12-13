@@ -208,8 +208,22 @@ export function DashboardHabits({ today }: DashboardHabitsProps) {
             body: JSON.stringify(analysisData)
         });
 
-        if (!response.ok) throw new Error('AI analysis failed');
+        if (!response.ok) {
+            let errorMessage = 'AI 분석 실패';
+            try {
+                const errorData = await response.json();
+                errorMessage = errorData.detail || errorData.error || errorMessage;
+            } catch (e) {
+                // JSON 파싱 실패 시 기본 메시지 사용
+                errorMessage = `AI 분석 실패 (상태 코드: ${response.status})`;
+            }
+            throw new Error(errorMessage);
+        }
         const data = await response.json();
+        
+        if (!data.analysis || typeof data.analysis !== 'string' || data.analysis.trim() === '') {
+            throw new Error('AI 분석 결과가 비어있습니다. 다시 시도해주세요.');
+        }
         
         setAiHabitAnalysis(data.analysis);
         setShowAIModal(true);
@@ -227,9 +241,10 @@ export function DashboardHabits({ today }: DashboardHabitsProps) {
         const diagnosis = await dashboardRepository.getLatestDiagnosis(selectedHabitId);
         setLatestDiagnosis(diagnosis);
 
-    } catch (error) {
+    } catch (error: any) {
         console.error('Error analyzing habit:', error);
-        alert('AI 분석 중 오류가 발생했습니다.');
+        const errorMessage = error?.message || 'AI 분석 중 오류가 발생했습니다.';
+        alert(`AI 분석 중 오류가 발생했습니다: ${errorMessage}`);
     } finally {
         setAnalyzingHabit(false);
     }

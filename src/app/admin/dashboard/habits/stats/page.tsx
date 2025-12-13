@@ -121,8 +121,15 @@ export default function HabitStatsPage() {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.detail || errorData.error || 'AI 분석 실패');
+        let errorMessage = 'AI 분석 실패';
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.detail || errorData.error || errorMessage;
+        } catch (e) {
+          // JSON 파싱 실패 시 기본 메시지 사용
+          errorMessage = `AI 분석 실패 (상태 코드: ${response.status})`;
+        }
+        throw new Error(errorMessage);
       }
 
       const data = await response.json();
