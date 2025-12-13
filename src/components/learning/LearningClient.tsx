@@ -141,8 +141,7 @@ export function LearningClient({ entries, subjects, initialSubject }: LearningCl
           <div className="mx-auto max-w-4xl rounded-3xl border border-slate-200 bg-white px-6 py-6 text-center shadow-sm">
             <h1 className="text-section-title text-black">Learning</h1>
             <p className="mt-2 max-w-2xl text-body text-slate-600 mx-auto">
-              수학, 프로그래밍, 인공지능을 배우며 남기고 싶은 기록들을 모아 둔
-              공간입니다. 과목별로 정리되어 있습니다.
+              배움을 기록하고 나눕니다.
             </p>
           </div>
           <div className="mt-4 h-px w-full bg-slate-200" />

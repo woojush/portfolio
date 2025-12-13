@@ -41,7 +41,7 @@ export function LearningSection() {
       <header className="section-header space-y-3">
         <h2 className="text-4xl font-bold md:text-5xl">Learning</h2>
         <p className="mt-1 max-w-3xl text-lg text-slate-300 md:text-xl">
-          지식을 기록하고 공유합니다.
+          배움을 기록하고 나눕니다.
         </p>
       </header>
 
