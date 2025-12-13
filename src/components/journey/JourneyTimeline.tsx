@@ -15,8 +15,18 @@ export function JourneyTimeline({ items }: JourneyTimelineProps) {
               {item.period}
             </p>
             <h3 className="text-sm font-semibold text-slate-100 md:text-base">
-              {item.title}
+              {item.organization || item.title}
             </h3>
+            {item.affiliation && (
+              <p className="text-xs font-normal text-slate-300 md:text-sm">
+                {item.affiliation}
+              </p>
+            )}
+            {item.title && item.organization && (
+              <p className="text-xs text-slate-300 md:text-sm">
+                {item.title}
+              </p>
+            )}
             <p className="text-sm text-slate-300 md:text-base">
               {item.description}
             </p>

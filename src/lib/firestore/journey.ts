@@ -23,6 +23,7 @@ export interface JourneyItem {
   period: string;              // "2025.02 - 2025.05"
   title: string;               // 역할/직위
   organization?: string;       // 조직명
+  affiliation?: string;        // 소속
   location?: string;           // 위치
   description: string;         // 간단 설명
   highlights?: string[];       // 불릿 하이라이트
@@ -49,6 +50,7 @@ function docToEntry(
     period: data.period ?? '',
     title: data.title ?? '',
     organization: data.organization ?? '',
+    affiliation: data.affiliation ?? '',
     location: data.location ?? '',
     description: data.description ?? '',
     highlights: Array.isArray(data.highlights) ? data.highlights : [],
@@ -131,6 +133,7 @@ export async function addJourneyItem(
       period: item.period,
       title: item.title,
       organization: item.organization || '',
+      affiliation: item.affiliation || '',
       location: item.location || '',
       description: item.description,
       highlights: item.highlights ?? [],
@@ -171,6 +174,8 @@ export async function updateJourneyItem(
     if (updates.title !== undefined) updateData.title = updates.title;
     if (updates.organization !== undefined)
       updateData.organization = updates.organization;
+    if (updates.affiliation !== undefined)
+      updateData.affiliation = updates.affiliation;
     if (updates.location !== undefined) updateData.location = updates.location;
     if (updates.description !== undefined)
       updateData.description = updates.description;

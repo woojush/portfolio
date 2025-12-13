@@ -94,6 +94,11 @@ export function JourneyList({ items }: JourneyListProps) {
                 </>
               )}
             </p>
+            {current.affiliation && (
+              <p className="font-normal leading-tight" style={{ fontSize: 18 }}>
+                {current.affiliation}
+              </p>
+            )}
             <p className="text-sm font-normal" style={{ color: '#475569', fontSize: 14, fontWeight: 400 }}>
               {current.period}
               {durationLabel(current) && ` · ${durationLabel(current)}`}
@@ -149,6 +154,11 @@ export function JourneyList({ items }: JourneyListProps) {
                     </>
                   )}
                 </p>
+                {item.affiliation && (
+                  <p className="font-normal leading-tight" style={{ fontSize: 18 }}>
+                    {item.affiliation}
+                  </p>
+                )}
                 <p className="text-xs font-normal" style={{ color: '#0f172a', fontSize: 14, fontWeight: 400 }}>
                   {item.period}
                   {durationLabel(item) && ` · ${durationLabel(item)}`}

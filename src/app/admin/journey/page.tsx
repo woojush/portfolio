@@ -10,6 +10,7 @@ type FormState = {
   period: string;
   title: string;        // 역할*
   organization: string; // 조직*
+  affiliation: string;  // 소속
   location: string;     // 위치*
   description: string;  // 설명*
   logoUrl: string;      // 로고만 사용
@@ -30,6 +31,7 @@ const emptyForm: FormState = {
   period: '',
   title: '',
   organization: '',
+  affiliation: '',
   location: '',
   description: '',
   logoUrl: '',
@@ -154,6 +156,7 @@ export default function AdminJourneyPage() {
       period: item.period || '',
       title: item.title || '',
       organization: item.organization || '',
+      affiliation: item.affiliation || '',
       location: item.location || '',
       description: item.description || '',
       logoUrl: item.logoUrl || '',
@@ -188,6 +191,7 @@ export default function AdminJourneyPage() {
       period: form.period.trim(),
       title: form.title.trim(),
       organization: form.organization.trim(),
+      affiliation: form.affiliation.trim(),
       location: form.location.trim(),
       description: form.description.trim(),
       logoUrl: form.logoUrl.trim(),
@@ -401,6 +405,11 @@ export default function AdminJourneyPage() {
                           <h3 className="text-sm font-semibold text-slate-50 leading-tight">
                             {item.organization || item.title}
                           </h3>
+                          {item.affiliation && (
+                            <p className="text-xs text-slate-300">
+                              {item.affiliation}
+                            </p>
+                          )}
                           {item.title && (
                             <p className="text-xs text-slate-300">{item.title}</p>
                           )}
@@ -474,6 +483,12 @@ export default function AdminJourneyPage() {
                     onChange={(v) => setForm({ ...form, organization: v })}
                     placeholder="조직/학교명"
                     required
+                  />
+                  <LabeledInput
+                    label="소속"
+                    value={form.affiliation}
+                    onChange={(v) => setForm({ ...form, affiliation: v })}
+                    placeholder="소속 (선택)"
                   />
                   <LabeledInput
                     label="역할 *"
