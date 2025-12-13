@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { AdminHeader } from '@/components/admin/AdminHeader';
 import type { JourneyItem } from '@/lib/firestore/journey';
+import type { Activity } from '@/lib/firestore/activities';
 
 type FormState = {
   id?: string;
@@ -17,6 +18,12 @@ type FormState = {
   logoOffsetX: number;
   logoOffsetY: number;
   logoScale: number;
+};
+
+type ActivityFormState = {
+  id?: string;
+  date: string;        // YY.MM 형식
+  description: string;
 };
 
 const emptyForm: FormState = {
@@ -57,6 +64,14 @@ export default function AdminJourneyPage() {
   const [logoOffsetY, setLogoOffsetY] = useState(0);
   const [logoScale, setLogoScale] = useState(100);
 
+  // Activities state
+  const [activities, setActivities] = useState<Activity[]>([]);
+  const [activitiesLoading, setActivitiesLoading] = useState(true);
+  const [activitiesError, setActivitiesError] = useState<string | null>(null);
+  const [activityForm, setActivityForm] = useState<ActivityFormState>({ date: '', description: '' });
+  const [activitySubmitting, setActivitySubmitting] = useState(false);
+  const [showActivityForm, setShowActivityForm] = useState(false);
+
   function computeDuration(text: string): string {
     // 지원 포맷 예: "2025년 2월 - 2025년 5월", "2025.02 - 2025.05"
     // 연-월 추출 후 개월 차이 계산
@@ -91,6 +106,7 @@ export default function AdminJourneyPage() {
 
   useEffect(() => {
     load();
+    loadActivities();
   }, []);
 
   const sorted = useMemo(() => {
@@ -226,6 +242,100 @@ export default function AdminJourneyPage() {
     } catch (err: any) {
       console.error(err);
       setError('삭제 중 오류가 발생했습니다.');
+    }
+  }
+
+  // Activities functions
+  async function loadActivities() {
+    try {
+      setActivitiesLoading(true);
+      setActivitiesError(null);
+      const data = await fetchJson('/api/admin/activities');
+      setActivities(data.items ?? []);
+    } catch (err: any) {
+      console.error(err);
+      if (err?.message === 'Unauthorized') {
+        setActivitiesError('인증이 만료되었습니다. 다시 로그인해 주세요.');
+      } else {
+        setActivitiesError('Activities를 불러오지 못했습니다.');
+      }
+    } finally {
+      setActivitiesLoading(false);
+    }
+  }
+
+  function startCreateActivity() {
+    setActivityForm({ date: '', description: '' });
+    setShowActivityForm(true);
+  }
+
+  function startEditActivity(activity: Activity) {
+    setActivityForm({
+      id: activity.id,
+      date: activity.date,
+      description: activity.description
+    });
+    setShowActivityForm(true);
+  }
+
+  function cancelActivityForm() {
+    setShowActivityForm(false);
+    setActivityForm({ date: '', description: '' });
+    setActivitySubmitting(false);
+  }
+
+  async function handleActivitySubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (activitySubmitting) return;
+
+    const payload = {
+      date: activityForm.date.trim(),
+      description: activityForm.description.trim()
+    };
+
+    if (!payload.date || !payload.description) {
+      setActivitiesError('날짜와 설명을 입력하세요.');
+      return;
+    }
+
+    setActivitySubmitting(true);
+    setActivitiesError(null);
+    try {
+      if (activityForm.id) {
+        await fetchJson(`/api/admin/activities/${activityForm.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+      } else {
+        await fetchJson('/api/admin/activities', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+      }
+      cancelActivityForm();
+      await loadActivities();
+    } catch (err: any) {
+      console.error(err);
+      if (err?.message === 'Unauthorized') {
+        setActivitiesError('인증이 만료되었습니다. 다시 로그인해 주세요.');
+      } else {
+        setActivitiesError('저장 중 오류가 발생했습니다.');
+      }
+    } finally {
+      setActivitySubmitting(false);
+    }
+  }
+
+  async function handleActivityDelete(id: string) {
+    if (!confirm('정말 삭제하시겠습니까?')) return;
+    try {
+      await fetchJson(`/api/admin/activities/${id}`, { method: 'DELETE' });
+      await loadActivities();
+    } catch (err: any) {
+      console.error(err);
+      setActivitiesError('삭제 중 오류가 발생했습니다.');
     }
   }
 
@@ -524,6 +634,113 @@ export default function AdminJourneyPage() {
               </form>
             </section>
           )}
+
+          {/* Activities Section */}
+          <section className="space-y-4 rounded-3xl border border-slate-800 bg-slate-900/70 p-5">
+            <div className="flex flex-wrap items-center gap-3 justify-between">
+              <h2 className="text-sm font-semibold text-slate-100">Activities</h2>
+              <button
+                type="button"
+                onClick={startCreateActivity}
+                className="rounded-full bg-warmBeige px-4 py-1.5 text-xs font-medium text-slate-900 transition hover:bg-warmBeige/90"
+              >
+                + 새 항목 추가
+              </button>
+            </div>
+
+            {activitiesError && <p className="text-sm text-red-400">{activitiesError}</p>}
+            {activitiesLoading && <p className="text-sm text-slate-400">불러오는 중...</p>}
+
+            {!activitiesLoading && activities.length === 0 && (
+              <p className="text-sm text-slate-400">Activities 항목이 없습니다.</p>
+            )}
+
+            {!activitiesLoading && activities.length > 0 && (
+              <div className="space-y-2">
+                {activities.map((activity) => (
+                  <article
+                    key={activity.id}
+                    className="rounded-lg border border-slate-800 bg-slate-900/80 p-3 transition hover:border-warmBeige/70"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex gap-3 flex-1">
+                        <span className="text-xs font-medium text-slate-300 whitespace-nowrap flex-shrink-0">
+                          {activity.date}
+                        </span>
+                        <p className="text-xs text-slate-200 flex-1">{activity.description}</p>
+                      </div>
+                      <div className="flex gap-2 flex-shrink-0">
+                        <button
+                          type="button"
+                          onClick={() => startEditActivity(activity)}
+                          className="rounded-full border border-slate-700 bg-slate-900 px-2.5 py-1 text-[10px] text-slate-300 transition hover:bg-slate-800 hover:border-warmBeige/50"
+                        >
+                          편집
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleActivityDelete(activity.id)}
+                          className="rounded-full border border-red-900/50 bg-red-950/30 px-2.5 py-1 text-[10px] text-red-300 transition hover:bg-red-950/50"
+                        >
+                          삭제
+                        </button>
+                      </div>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            )}
+
+            {showActivityForm && (
+              <div className="mt-4 rounded-lg border border-slate-800 bg-slate-900/80 p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-xs font-semibold text-slate-50">
+                    {activityForm.id ? '항목 수정' : '새 항목 추가'}
+                  </h3>
+                  <button
+                    type="button"
+                    onClick={cancelActivityForm}
+                    className="rounded-full border border-slate-700 px-2.5 py-1 text-[10px] text-slate-300 transition hover:bg-slate-800"
+                  >
+                    닫기
+                  </button>
+                </div>
+
+                <form onSubmit={handleActivitySubmit} className="space-y-3">
+                  <LabeledInput
+                    label="날짜 *"
+                    value={activityForm.date}
+                    onChange={(v) => setActivityForm({ ...activityForm, date: v })}
+                    placeholder="YY.MM (예: 24.06)"
+                    required
+                  />
+                  <LabeledTextarea
+                    label="설명 *"
+                    value={activityForm.description}
+                    onChange={(v) => setActivityForm({ ...activityForm, description: v })}
+                    placeholder="활동 설명을 입력하세요."
+                    required
+                  />
+                  <div className="flex gap-2">
+                    <button
+                      type="submit"
+                      disabled={activitySubmitting}
+                      className="rounded-full bg-warmBeige px-4 py-1.5 text-xs font-semibold text-slate-900 transition hover:bg-warmBeige/90 disabled:opacity-60"
+                    >
+                      {activitySubmitting ? '저장 중...' : activityForm.id ? '수정 저장' : '추가'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={cancelActivityForm}
+                      className="rounded-full border border-slate-700 px-4 py-1.5 text-xs font-medium text-slate-300 transition hover:bg-slate-800"
+                    >
+                      취소
+                    </button>
+                  </div>
+                </form>
+              </div>
+            )}
+          </section>
         </main>
       </div>
     </div>

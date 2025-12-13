@@ -2,20 +2,95 @@
 
 // Activities section component - 작은 섹션으로 Journey 아래에 표시
 
-import { activities } from '@/data/activities';
+import { useEffect, useState } from 'react';
+import { activitiesRepository } from '@/lib/repositories/activitiesRepository';
+import type { Activity } from '@/lib/firestore/activities';
+
+// 괄호로 감싸진 텍스트를 회색으로 표시하는 헬퍼 함수
+function renderDescriptionWithGrayParentheses(text: string): (string | JSX.Element)[] {
+  // 괄호로 감싸진 부분을 찾아서 회색으로 표시
+  const parts: (string | JSX.Element)[] = [];
+  let lastIndex = 0;
+  const regex = /\([^)]*\)/g;
+  let match;
+  let keyIndex = 0;
+
+  while ((match = regex.exec(text)) !== null) {
+    // 괄호 이전 텍스트
+    if (match.index > lastIndex) {
+      parts.push(text.substring(lastIndex, match.index));
+    }
+    // 괄호로 감싸진 텍스트 (회색)
+    parts.push(
+      <span key={`paren-${keyIndex++}`} className="text-slate-500">
+        {match[0]}
+      </span>
+    );
+    lastIndex = regex.lastIndex;
+  }
+
+  // 남은 텍스트
+  if (lastIndex < text.length) {
+    parts.push(text.substring(lastIndex));
+  }
+
+  // 매치가 없으면 원본 텍스트 반환
+  return parts.length > 0 ? parts : [text];
+}
 
 export function ActivitiesSection() {
+  const [activities, setActivities] = useState<Activity[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function load() {
+      try {
+        const data = await activitiesRepository.getPublicEntries();
+        setActivities(data);
+      } catch (err) {
+        setError('활동 기록을 불러오지 못했습니다.');
+        console.error('Activities fetch error:', err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    load();
+  }, []);
+
+  if (loading) {
+    return (
+      <section id="activities" className="mt-12 pt-8 border-t border-slate-200">
+        <h2 className="text-2xl font-bold mb-4 text-black">Activities</h2>
+        <p className="text-sm text-slate-400">불러오는 중입니다...</p>
+      </section>
+    );
+  }
+
+  if (error) {
+    return (
+      <section id="activities" className="mt-12 pt-8 border-t border-slate-200">
+        <h2 className="text-2xl font-bold mb-4 text-black">Activities</h2>
+        <p className="text-sm text-red-400">{error}</p>
+      </section>
+    );
+  }
+
+  if (activities.length === 0) {
+    return null;
+  }
+
   return (
-    <section id="activities" className="mt-8 pt-8 border-t border-slate-200">
+    <section id="activities" className="mt-12 pt-8 border-t border-slate-200">
       <h2 className="text-2xl font-bold mb-4 text-black">Activities</h2>
       <div className="space-y-3">
-        {activities.map((activity, index) => (
-          <div key={index} className="flex gap-3">
+        {activities.map((activity) => (
+          <div key={activity.id} className="flex gap-3">
             <span className="text-sm font-medium text-black whitespace-nowrap flex-shrink-0">
-              {activity.date}:
+              {activity.date}
             </span>
             <p className="text-sm text-black leading-relaxed">
-              {activity.description}
+              {renderDescriptionWithGrayParentheses(activity.description)}
             </p>
           </div>
         ))}
