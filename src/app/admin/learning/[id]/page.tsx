@@ -129,6 +129,7 @@ export default function AdminLearningEditorPage() {
       }
 
       router.push(backUrl);
+      router.refresh();
     } catch (error) {
       console.error('Error saving entry:', error);
       alert('저장 중 오류가 발생했습니다.');
