@@ -21,8 +21,10 @@ function isHTML(content: string): boolean {
   return /<[a-z][\s\S]*>/i.test(content);
 }
 
+
 export function MarkdownRenderer({ content, className }: MarkdownRendererProps) {
   const contentRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (typeof window !== 'undefined' && contentRef.current && isHTML(content)) {
@@ -67,9 +69,192 @@ export function MarkdownRenderer({ content, className }: MarkdownRendererProps) 
     resetHeadingCounters();
   }, [content]);
 
+  // 연속된 이미지를 슬라이더로 변환
+  useEffect(() => {
+    if (!containerRef.current || isHTML(content)) return;
+
+    // ReactMarkdown 렌더링 완료 대기
+    const timer = setTimeout(() => {
+      const container = containerRef.current;
+      if (!container) return;
+    // ReactMarkdown이 이미지를 <p> 안에 <div> 안에 렌더링하므로, 그 구조를 찾음
+    const imageWrappers = Array.from(container.querySelectorAll('div.my-4')).filter(div => 
+      div.querySelector('img') && div.children.length === 1
+    ) as HTMLElement[];
+
+    if (imageWrappers.length < 2) return;
+
+    // 연속된 이미지 그룹 찾기 (인접한 이미지 래퍼들)
+    const groups: HTMLElement[][] = [];
+    let currentGroup: HTMLElement[] = [];
+
+    imageWrappers.forEach((wrapper, index) => {
+      const isFirst = index === 0;
+      const isLast = index === imageWrappers.length - 1;
+      const prevWrapper = !isFirst ? imageWrappers[index - 1] : null;
+      const nextWrapper = !isLast ? imageWrappers[index + 1] : null;
+
+      // 이전 또는 다음 요소가 바로 인접한지 확인
+      const isNextToPrev = prevWrapper && wrapper.previousElementSibling === prevWrapper;
+      const isNextToNext = nextWrapper && wrapper.nextElementSibling === nextWrapper;
+      const isNearby = isNextToPrev || isNextToNext;
+
+      if (isNearby) {
+        if (currentGroup.length === 0) {
+          currentGroup = [wrapper];
+        } else if (isNextToPrev) {
+          currentGroup.push(wrapper);
+        } else {
+          if (currentGroup.length >= 2) {
+            groups.push([...currentGroup]);
+          }
+          currentGroup = [wrapper];
+        }
+      } else {
+        if (currentGroup.length >= 2) {
+          groups.push([...currentGroup]);
+        }
+        currentGroup = [];
+      }
+    });
+
+    if (currentGroup.length >= 2) {
+      groups.push(currentGroup);
+    }
+
+    // 각 그룹을 슬라이더로 변환
+    groups.forEach((group) => {
+      const imagesData = group.map(wrapper => {
+        const img = wrapper.querySelector('img') as HTMLImageElement;
+        return {
+          src: img?.src || img?.getAttribute('src') || '',
+          alt: img?.alt || ''
+        };
+      }).filter(img => img.src);
+
+      if (imagesData.length < 2) return;
+
+      const firstWrapper = group[0];
+      const sliderId = `slider-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
+      // 슬라이더 HTML 생성
+      const sliderHTML = `
+        <div class="relative w-1/2 my-4">
+          <div class="relative overflow-hidden rounded-lg bg-slate-100" id="${sliderId}">
+            <div class="flex transition-transform duration-300 ease-in-out" data-current-index="0" style="transform: translateX(0%)">
+              ${imagesData.map((img, idx) => `
+                <div class="w-full flex-shrink-0">
+                  <img src="${img.src}" alt="${img.alt || `이미지 ${idx + 1}`}" class="w-full h-auto object-contain rounded-lg" />
+                </div>
+              `).join('')}
+            </div>
+          </div>
+          <button class="absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-black/50 p-2 text-white hover:bg-black/70 transition z-10" data-slider-prev="${sliderId}">
+            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
+          <button class="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-black/50 p-2 text-white hover:bg-black/70 transition z-10" data-slider-next="${sliderId}">
+            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+          <div class="flex justify-center gap-2 mt-2">
+            ${imagesData.map((_, idx) => `
+              <button class="slider-indicator h-2 rounded-full transition ${idx === 0 ? 'w-6 bg-black' : 'w-2 bg-slate-300'}" data-slider-indicator="${sliderId}" data-index="${idx}"></button>
+            `).join('')}
+          </div>
+        </div>
+      `;
+
+      // 첫 번째 래퍼를 슬라이더로 교체
+      firstWrapper.outerHTML = sliderHTML;
+
+      // 나머지 이미지 제거
+      group.slice(1).forEach(wrapper => {
+        if (wrapper.parentElement) {
+          wrapper.remove();
+        }
+      });
+    });
+
+    // 이벤트 리스너 추가 (동적으로 생성된 버튼들)
+    const updateSlider = (sliderId: string, newIndex: number) => {
+      const slider = document.getElementById(sliderId);
+      if (!slider) return;
+
+      const flex = slider.querySelector('.flex') as HTMLElement;
+      if (!flex) return;
+
+      const total = flex.children.length;
+      const index = newIndex < 0 ? total - 1 : newIndex >= total ? 0 : newIndex;
+      
+      flex.style.transform = `translateX(-${index * 100}%)`;
+      flex.setAttribute('data-current-index', String(index));
+
+      // 인디케이터 업데이트 (슬라이더의 부모 요소 내에서만 찾기)
+      const sliderParent = slider.parentElement;
+      if (sliderParent) {
+        const indicators = sliderParent.querySelectorAll(`[data-slider-indicator="${sliderId}"]`);
+        indicators.forEach((ind) => {
+          const indicator = ind as HTMLElement;
+          const indIndex = parseInt(indicator.getAttribute('data-index') || '0');
+          if (indIndex === index) {
+            indicator.className = 'slider-indicator h-2 w-6 rounded-full transition bg-black';
+          } else {
+            indicator.className = 'slider-indicator h-2 w-2 rounded-full transition bg-slate-300';
+          }
+        });
+      }
+    };
+
+    // 이전/다음 버튼 이벤트
+    container.querySelectorAll(`[data-slider-prev]`).forEach(btn => {
+      const sliderId = btn.getAttribute('data-slider-prev');
+      if (sliderId) {
+        btn.addEventListener('click', () => {
+          const slider = document.getElementById(sliderId);
+          const flex = slider?.querySelector('.flex') as HTMLElement;
+          if (flex) {
+            const currentIndex = parseInt(flex.getAttribute('data-current-index') || '0');
+            updateSlider(sliderId, currentIndex - 1);
+          }
+        });
+      }
+    });
+
+    container.querySelectorAll(`[data-slider-next]`).forEach(btn => {
+      const sliderId = btn.getAttribute('data-slider-next');
+      if (sliderId) {
+        btn.addEventListener('click', () => {
+          const slider = document.getElementById(sliderId);
+          const flex = slider?.querySelector('.flex') as HTMLElement;
+          if (flex) {
+            const currentIndex = parseInt(flex.getAttribute('data-current-index') || '0');
+            updateSlider(sliderId, currentIndex + 1);
+          }
+        });
+      }
+    });
+
+    // 인디케이터 버튼 이벤트
+    container.querySelectorAll(`[data-slider-indicator]`).forEach(btn => {
+      const sliderId = btn.getAttribute('data-slider-indicator');
+      const index = parseInt(btn.getAttribute('data-index') || '0');
+      if (sliderId) {
+        btn.addEventListener('click', () => {
+          updateSlider(sliderId, index);
+        });
+      }
+    });
+
+    return () => clearTimeout(timer);
+    }, 100); // ReactMarkdown 렌더링 대기
+  }, [content]);
+
   // Otherwise, render as Markdown
   return (
-    <div className={className || 'prose prose-invert max-w-none'}>
+    <div ref={containerRef} className={className || 'prose prose-invert max-w-none'}>
       <ReactMarkdown
         remarkPlugins={[remarkGfm, remarkMath, remarkBreaks]}
         rehypePlugins={[[rehypeKatex, { throwOnError: false }]]}
