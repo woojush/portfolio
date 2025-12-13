@@ -33,8 +33,11 @@ export function DeleteButton({ entryId, apiPath, redirectPath, onDelete }: Delet
       if (onDelete) {
         onDelete();
       } else {
-        router.push(redirectPath);
-        router.refresh();
+        // revalidatePath가 적용되도록 약간의 지연 후 리다이렉트
+        setTimeout(() => {
+          router.push(redirectPath);
+          router.refresh();
+        }, 100);
       }
     } catch (error: any) {
       console.error('Error deleting:', error);

@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import { learningRepository } from '@/lib/repositories/learningRepository';
 import { cookies } from 'next/headers';
 import { hasAdminSession } from '@/lib/adminSessionStore';
@@ -21,6 +22,11 @@ export async function DELETE(
 
     const { id } = await params;
     await learningRepository.delete(id);
+
+    // 캐시 무효화
+    revalidatePath('/learning');
+    revalidatePath('/admin/learning');
+    revalidatePath('/'); // 홈페이지도 갱신 (LearningSection)
 
     return NextResponse.json({ success: true });
   } catch (error: any) {
