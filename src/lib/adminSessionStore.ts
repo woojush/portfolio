@@ -1,21 +1,17 @@
-// Very small in-memory admin session store.
-// NOTE: This is sufficient for a personal portfolio, but not for production-grade security.
+// Stateless admin session helpers (backward-compatible function names).
+// We now use signed tokens instead of in-memory sessions.
 
-const sessions = new Set<string>();
+import { verifyAdminToken } from './adminAuth';
 
-export function addAdminSession(token: string) {
-  sessions.add(token);
+export function addAdminSession(_: string) {
+  // no-op: stateless token, nothing to store
 }
 
 export function hasAdminSession(token: string | undefined): boolean {
-  if (!token) return false;
-  return sessions.has(token);
+  const secret = process.env.ADMIN_SECRET;
+  return verifyAdminToken(token, secret);
 }
 
-export function removeAdminSession(token: string) {
-  sessions.delete(token);
+export function removeAdminSession(_: string) {
+  // no-op: logout handled by cookie deletion
 }
-
-
-
-

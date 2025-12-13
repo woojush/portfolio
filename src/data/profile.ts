@@ -17,22 +17,14 @@ export const profile: Profile = {
   tagline: 'AI와 삶을 함께 공부하는 2005년생 신우주입니다.',
   links: [
     {
-      id: 'email',
-      label: 'Email',
-      // TODO: 실제 이메일 주소로 변경하기 (mailto: 주소 포함)
-      href: '#'
-    },
-    {
-      id: 'github',
-      label: 'GitHub',
-      // TODO: 실제 GitHub 프로필 URL로 변경하기
-      href: '#'
-    },
-    {
       id: 'linkedin',
       label: 'LinkedIn',
-      // TODO: 실제 LinkedIn 프로필 URL로 변경하기
-      href: '#'
+      href: 'https://www.linkedin.com/in/%EC%9A%B0%EC%A3%BC-%EC%8B%A0-346341344/'
+    },
+    {
+      id: 'email',
+      label: 'Email',
+      href: 'mailto:tlsdntjr1121@naver.com'
     }
   ]
 };

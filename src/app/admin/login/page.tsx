@@ -18,6 +18,7 @@ export default function AdminLoginPage() {
     try {
       const res = await fetch('/api/admin/login', {
         method: 'POST',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ code })
       });
@@ -37,7 +38,7 @@ export default function AdminLoginPage() {
   return (
     <main className="mx-auto flex min-h-screen max-w-md items-center justify-center px-4">
       <div className="w-full rounded-2xl border border-slate-800 bg-slate-950/80 p-6 shadow-lg">
-        <h1 className="mb-2 text-section-title">Admin Login</h1>
+        <h1 className="mb-2 text-section-title text-white">Admin Login</h1>
         <p className="mb-4 text-sm text-slate-300">
           6자리 편집 코드를 입력하면 개인 아카이브 데이터를 수정할 수 있는
           관리자 화면으로 이동합니다.
@@ -71,7 +72,7 @@ export default function AdminLoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-full bg-warmBeige px-4 py-2 text-sm font-medium text-slate-900 shadow-sm transition hover:bg-warmBeige/90 disabled:cursor-not-allowed disabled:opacity-60"
+            className="w-full rounded-full bg-white px-4 py-2 text-sm font-medium text-[var(--text-primary)] shadow-sm transition hover:bg-white/90 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {loading ? '확인 중...' : '로그인'}
           </button>

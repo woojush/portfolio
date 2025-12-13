@@ -34,12 +34,14 @@ export function LearningSection() {
   }, []);
 
   return (
-    <section id="learning" className="section-container">
-      <header className="section-header">
-        <h2 className="text-section-title">Learning</h2>
-        <p className="mt-2 max-w-2xl text-body text-slate-300">
-          수학, 프로그래밍, 인공지능을 배우며 남기고 싶은 기록들을 모아 둔
-          공간입니다. 개념을 이해해 가는 과정을 차분히 정리하려고 합니다.
+    <section
+      id="learning"
+      className="section-container py-10 md:py-14"
+    >
+      <header className="section-header space-y-3">
+        <h2 className="text-4xl font-bold md:text-5xl">Learning</h2>
+        <p className="mt-1 max-w-3xl text-lg text-slate-300 md:text-xl">
+          지식을 기록하고 공유합니다.
         </p>
       </header>
 
@@ -60,7 +62,7 @@ export function LearningSection() {
       )}
 
       {!loading && !error && subjects.length > 0 && (
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid gap-5 md:grid-cols-3">
           {subjects.map((subject) => (
             <LearningSubjectCard
               key={subject.subject}

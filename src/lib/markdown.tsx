@@ -9,6 +9,7 @@ import remarkBreaks from 'remark-breaks';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
+import { generateHeadingId, resetHeadingCounters } from '@/lib/headingId';
 
 interface MarkdownRendererProps {
   content: string;
@@ -47,6 +48,25 @@ export function MarkdownRenderer({ content, className }: MarkdownRendererProps) 
     );
   }
 
+  // Extract text from ReactMarkdown children (recursive)
+  const extractText = (children: any): string => {
+    if (typeof children === 'string') {
+      return children;
+    }
+    if (Array.isArray(children)) {
+      return children.map(extractText).join('');
+    }
+    if (children && typeof children === 'object' && 'props' in children && children.props.children) {
+      return extractText(children.props.children);
+    }
+    return String(children || '');
+  };
+
+  // Reset counters when content changes to ensure consistency with TableOfContents
+  useEffect(() => {
+    resetHeadingCounters();
+  }, [content]);
+
   // Otherwise, render as Markdown
   return (
     <div className={className || 'prose prose-invert max-w-none'}>
@@ -54,10 +74,34 @@ export function MarkdownRenderer({ content, className }: MarkdownRendererProps) 
         remarkPlugins={[remarkGfm, remarkMath, remarkBreaks]}
         rehypePlugins={[[rehypeKatex, { throwOnError: false }]]}
         components={{
-          h1: ({ children }) => <h1 className="mb-4 mt-6 text-2xl font-bold text-slate-100">{children}</h1>,
-          h2: ({ children }) => <h2 className="mb-3 mt-5 text-xl font-semibold text-slate-200">{children}</h2>,
-          h3: ({ children }) => <h3 className="mb-2 mt-4 text-lg font-semibold text-slate-200">{children}</h3>,
-          p: ({ children }) => <p className="mb-4 leading-relaxed text-slate-300">{children}</p>,
+          h1: ({ children }) => {
+            const text = extractText(children);
+            const id = generateHeadingId(text, 1);
+            return (
+              <h1 id={id} className="mb-4 mt-6 text-2xl font-bold scroll-mt-24" style={{ color: 'rgba(0, 0, 0, 1)' }}>
+                {children}
+              </h1>
+            );
+          },
+          h2: ({ children }) => {
+            const text = extractText(children);
+            const id = generateHeadingId(text, 2);
+            return (
+              <h2 id={id} className="mb-3 mt-5 text-xl font-semibold scroll-mt-24" style={{ color: 'var(--card-bg)' }}>
+                {children}
+              </h2>
+            );
+          },
+          h3: ({ children }) => {
+            const text = extractText(children);
+            const id = generateHeadingId(text, 3);
+            return (
+              <h3 id={id} className="mb-2 mt-4 text-lg font-semibold scroll-mt-24" style={{ color: 'var(--card-bg)' }}>
+                {children}
+              </h3>
+            );
+          },
+          p: ({ children }) => <p className="mb-4 leading-relaxed" style={{ color: 'var(--card-bg)' }}>{children}</p>,
           ul: ({ children }) => <ul className="mb-4 ml-6 list-disc space-y-1 text-slate-300">{children}</ul>,
           ol: ({ children }) => <ol className="mb-4 ml-6 list-decimal space-y-1 text-slate-300">{children}</ol>,
           li: ({ children }) => <li className="text-slate-300">{children}</li>,

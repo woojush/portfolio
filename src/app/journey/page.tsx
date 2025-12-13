@@ -7,17 +7,17 @@ export default async function JourneyPage() {
   const items = await journeyRepository.getPublicEntries();
 
   return (
-    <main className="mx-auto max-w-5xl px-4 pb-16 pt-3 md:px-6 md:pt-4">
-      <section className="section-container border-0 pt-0" style={{ borderTop: 'none' }}>
-        <header className="section-header">
-          <h1 className="text-section-title">Journey</h1>
-          <p className="mt-2 max-w-2xl text-body text-slate-0">
-            시간의 흐름 속에서 어떤 선택을 했고, 무엇을 느꼈는지 간단한
-            타임라인으로 정리했습니다.
-          </p>
-          <div className="mt-4 h-px w-full bg-slate-800" />
+    <main className="mx-auto max-w-5xl px-4 pb-16 pt-6 md:px-6">
+      <section className="section-container border-0 pt-0 text-center" style={{ borderTop: 'none' }}>
+        <header className="section-header items-center">
+          <h1 className="text-black font-bold" style={{ fontSize: '2.4rem', lineHeight: 1.05 }}>
+            Journey
+          </h1>
+          <div className="mx-auto mt-4 h-px w-full max-w-3xl bg-slate-700/50" />
         </header>
-        <JourneyList items={items} />
+        <div className="mt-6 text-left">
+          <JourneyList items={items} />
+        </div>
       </section>
     </main>
   );

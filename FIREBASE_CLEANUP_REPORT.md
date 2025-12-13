@@ -2,7 +2,7 @@
 
 ## 현재 사용 중인 컬렉션 목록
 
-### 1. **learningEntries** ✅ 사용 중
+### 1. **learningItems** ✅ 사용 중
 - 용도: 학습 기록 저장
 - 사용 위치: `src/lib/repositories/learningRepository.ts`
 - 상태: 활발히 사용 중

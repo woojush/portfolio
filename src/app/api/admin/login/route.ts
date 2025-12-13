@@ -4,6 +4,7 @@ import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 import { randomUUID } from 'crypto';
 import { addAdminSession } from '@/lib/adminSessionStore';
+import { signAdminToken } from '@/lib/adminAuth';
 
 const MAX_ATTEMPTS = 5;
 const BLOCK_WINDOW_MS = 5 * 60 * 1000; // 5 minutes
@@ -56,13 +57,27 @@ export async function POST(req: Request) {
   if (code === expectedCode) {
     attempts.delete(clientKey);
 
-    const token = randomUUID();
-    addAdminSession(token);
+    const secret = process.env.ADMIN_SECRET;
+    if (!secret) {
+      return NextResponse.json(
+        { ok: false, error: 'Server not configured with ADMIN_SECRET.' },
+        { status: 500 }
+      );
+    }
+
+    const token = signAdminToken(
+      {
+        sub: 'admin',
+        exp: Math.floor(Date.now() / 1000) + 60 * 60 // 1 hour
+      },
+      secret
+    );
+    addAdminSession(token); // no-op but kept for compatibility
 
     const res = NextResponse.json({ ok: true }, { status: 200 });
     res.cookies.set('admin_session', token, {
       httpOnly: true,
-      secure: true,
+      secure: process.env.NODE_ENV === 'production', // 로컬 http에서는 false
       sameSite: 'lax',
       path: '/',
       maxAge: 60 * 60 // 1 hour

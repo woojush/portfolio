@@ -12,7 +12,9 @@ import {
   type DocumentData,
   type QueryDocumentSnapshot,
   orderBy,
-  query
+  query,
+  where,
+  writeBatch
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase/client';
 
@@ -30,6 +32,12 @@ export interface JourneyItem {
   isCurrent?: boolean;         // 현재 재직 여부
   createdAt?: string;          // 정렬용
   sortOrder?: number;          // 수동 정렬
+  textColor?: string;          // 표시 색상 (예: black/gray/blue)
+  textSize?: number;           // 표시 폰트 크기(px 등)
+  durationText?: string;       // 기간 옆에 표시할 "X년 Y개월" 등 문구
+  logoOffsetX?: number;        // 로고 미리보기 X 이동(px)
+  logoOffsetY?: number;        // 로고 미리보기 Y 이동(px)
+  logoScale?: number;          // 로고 미리보기 배율(%)
 }
 
 function docToEntry(
@@ -49,8 +57,30 @@ function docToEntry(
     imageUrl: data.imageUrl ?? '',
     isCurrent: data.isCurrent ?? false,
     createdAt: data.createdAt,
-    sortOrder: data.sortOrder
+    sortOrder: data.sortOrder,
+    textColor: data.textColor ?? '',
+    textSize: data.textSize,
+    durationText: data.durationText ?? '',
+    logoOffsetX: data.logoOffsetX ?? 0,
+    logoOffsetY: data.logoOffsetY ?? 0,
+    logoScale: data.logoScale ?? 100
   };
+}
+
+/**
+ * Ensure only one document has isCurrent=true.
+ */
+async function clearOtherCurrents(exceptId?: string) {
+  const q = query(collection(db, 'journeyItems'), where('isCurrent', '==', true));
+  const snapshot = await getDocs(q);
+  if (snapshot.empty) return;
+  const batch = writeBatch(db);
+  snapshot.docs.forEach((d) => {
+    if (d.id !== exceptId) {
+      batch.update(d.ref, { isCurrent: false });
+    }
+  });
+  await batch.commit();
 }
 
 /**
@@ -109,8 +139,17 @@ export async function addJourneyItem(
       imageUrl: item.imageUrl || '',
       isCurrent: item.isCurrent ?? false,
       createdAt: new Date().toISOString(),
-      sortOrder: item.sortOrder ?? null
+      sortOrder: item.sortOrder ?? null,
+      textColor: item.textColor || '',
+      textSize: item.textSize ?? null,
+      durationText: item.durationText || '',
+      logoOffsetX: item.logoOffsetX ?? 0,
+      logoOffsetY: item.logoOffsetY ?? 0,
+      logoScale: item.logoScale ?? 100
     });
+    if (item.isCurrent) {
+      await clearOtherCurrents(docRef.id);
+    }
     return docRef.id;
   } catch (error) {
     console.error('Error adding journey item:', error);
@@ -140,10 +179,26 @@ export async function updateJourneyItem(
     if (updates.tags !== undefined) updateData.tags = updates.tags ?? [];
     if (updates.logoUrl !== undefined) updateData.logoUrl = updates.logoUrl;
     if (updates.imageUrl !== undefined) updateData.imageUrl = updates.imageUrl;
-    if (updates.isCurrent !== undefined)
+    if (updates.isCurrent !== undefined) {
       updateData.isCurrent = updates.isCurrent;
+      if (updates.isCurrent) {
+        await clearOtherCurrents(id);
+      }
+    }
     if (updates.sortOrder !== undefined)
       updateData.sortOrder = updates.sortOrder ?? null;
+    if (updates.textColor !== undefined)
+      updateData.textColor = updates.textColor ?? '';
+    if (updates.textSize !== undefined)
+      updateData.textSize = updates.textSize ?? null;
+    if (updates.durationText !== undefined)
+      updateData.durationText = updates.durationText ?? '';
+    if (updates.logoOffsetX !== undefined)
+      updateData.logoOffsetX = updates.logoOffsetX ?? 0;
+    if (updates.logoOffsetY !== undefined)
+      updateData.logoOffsetY = updates.logoOffsetY ?? 0;
+    if (updates.logoScale !== undefined)
+      updateData.logoScale = updates.logoScale ?? 100;
     await updateDoc(docRef, updateData);
   } catch (error) {
     console.error('Error updating journey item:', error);

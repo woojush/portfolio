@@ -22,7 +22,7 @@
 7. `dashboard_habit_diagnoses` - AI 습관 진단
 
 #### 콘텐츠 컬렉션 (4개)
-8. `learningEntries` - 학습 기록
+8. `learningItems` - 학습 기록
 9. `experienceItems` - 경험 기록
 10. `writingEntries` - 글쓰기 기록
 11. `journeyItems` - 여정 기록

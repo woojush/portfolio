@@ -99,6 +99,11 @@ export function MarkdownEditor({
       label: '1.',
       title: 'Numbered List',
       onClick: () => insertText('1. ', '')
+    },
+    {
+      label: '---',
+      title: '구분선',
+      onClick: () => insertText('\n---\n', '')
     }
   ];
 

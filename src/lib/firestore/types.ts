@@ -4,11 +4,14 @@ export interface LearningEntry {
   id: string;
   title: string;
   subject: string; // 자유 입력
+  thumbnailUrl: string; // 썸네일 이미지 URL
   startDate: string; // "YYYY-MM-DD"
   endDate?: string; // "YYYY-MM-DD"
   summary: string;
   tags: string[];
   content: string; // markdown
+  authorName?: string; // 작성자 이름
+  authorImageUrl?: string; // 작성자 프로필 이미지 URL
   public: boolean;
   draft: boolean;
   createdAt: string;
@@ -17,12 +20,13 @@ export interface LearningEntry {
 
 export interface ExperienceItem {
   id: string;
-  title: string; // "2024.01 - 2024.03" (이전 periodLabel)
+  title: string; // 제목
   category: string; // "알바", "동아리", "프로젝트" 등
+  thumbnailUrl: string; // 썸네일 이미지 URL
+  period: string; // 시기 (예: "2024.01 - 2024.03", "2023 겨울")
   startDate: string; // "YYYY-MM-DD"
   endDate?: string; // "YYYY-MM-DD"
   summary: string;
-  images: string[]; // URL list
   content?: string; // markdown (optional)
   public: boolean;
   draft: boolean;

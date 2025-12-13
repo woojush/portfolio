@@ -1,19 +1,20 @@
 'use client';
 
 // Admin Learning management page
-// Lists all learning entries with edit links
+// Uses same UI as public Learning page with edit functionality
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { learningRepository } from '@/lib/repositories/learningRepository';
 import type { LearningEntry } from '@/lib/firestore/types';
 import { AdminHeader } from '@/components/admin/AdminHeader';
+import { LearningEntryCard } from '@/components/learning/LearningEntryCard';
 
 export default function AdminLearningPage() {
   const [entries, setEntries] = useState<LearningEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [search, setSearch] = useState('');
+  const [activeCategory, setActiveCategory] = useState<string>('all');
 
   useEffect(() => {
     loadEntries();
@@ -33,148 +34,105 @@ export default function AdminLearningPage() {
     }
   }
 
+  // 동적으로 카테고리 생성
+  const categories = useMemo(() => {
+    const uniqueSubjects = Array.from(new Set(entries.map((e) => e.subject))).filter(Boolean);
+    const categoryList = [
+      { key: 'all', label: '전체보기' },
+      ...uniqueSubjects.map((subject) => ({
+        key: subject,
+        label: subject
+      }))
+    ];
+    return categoryList;
+  }, [entries]);
+
+  const filtered = useMemo(() => {
+    if (activeCategory === 'all') return entries;
+    return entries.filter((entry) => entry.subject === activeCategory);
+  }, [activeCategory, entries]);
+
   return (
-    <div className="min-h-screen bg-slate-950 p-4 md:p-6 pb-20">
-      <div className="mx-auto max-w-7xl space-y-6">
+    <div className="min-h-screen bg-slate-950 p-6 md:p-10 pb-24">
+      <div className="mx-auto max-w-7xl space-y-8">
         <AdminHeader />
         
-        <main>
+        <main className="mx-auto max-w-6xl space-y-6">
           <header className="mb-6 md:mb-8">
-            <p className="mt-2 max-w-2xl text-body text-slate-300">
-              학습 기록을 관리할 수 있습니다. 각 항목을 클릭하여 편집하거나, "새 항목 추가" 버튼으로 새 항목을 만들 수 있습니다.
-            </p>
+            <div className="mx-auto max-w-4xl rounded-3xl border border-slate-800 bg-slate-900/60 px-6 py-6 text-center shadow-sm">
+              <h1 className="text-3xl font-bold text-slate-100">Learning</h1>
+              <p className="mt-2 max-w-2xl text-slate-400 mx-auto">
+                배움을 기록하고 공유합니다.
+              </p>
+            </div>
+            <div className="mt-4 h-px w-full bg-slate-800" />
           </header>
 
-      <section className="space-y-4 rounded-2xl border border-slate-800 bg-slate-950/70 p-5">
-        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <div className="flex flex-col gap-2">
-            <h2 className="text-sm font-semibold text-slate-100 md:text-base">
-              학습 기록 목록 (과목별)
-            </h2>
-            <input
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="제목, 요약, 태그, 과목으로 검색"
-              className="w-full max-w-xs rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-xs text-slate-100 focus:border-warmBeige focus:outline-none"
-            />
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex-1" />
+            <Link
+              href={`/admin/learning/new?from=admin&category=${encodeURIComponent(activeCategory)}`}
+              className="rounded-full bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700"
+            >
+              + 새 항목 추가
+            </Link>
           </div>
-          <Link
-            href="/admin/learning/new"
-            className="rounded-full bg-warmBeige px-4 py-1.5 text-xs font-medium text-slate-900 transition hover:bg-warmBeige/90"
-          >
-            + 새 항목 추가
-          </Link>
-        </div>
 
-        {error && (
-          <p className="text-sm text-red-400" aria-live="polite">
-            {error}
-          </p>
-        )}
+          {/* 동적 카테고리 버튼 */}
+          {categories.length > 1 && (
+            <div className="mt-4 flex flex-wrap gap-2">
+              {categories.map((c) => (
+                <button
+                  key={c.key}
+                  type="button"
+                  onClick={() => setActiveCategory(c.key)}
+                    className={[
+                      'rounded-full px-3 py-1 text-xs md:text-sm transition border',
+                      activeCategory === c.key
+                        ? 'border-blue-600 bg-blue-600 text-white'
+                        : 'border-slate-700 bg-slate-900 text-slate-300 hover:border-blue-600 hover:text-blue-400'
+                    ].join(' ')}
+                >
+                  {c.label}
+                </button>
+              ))}
+            </div>
+          )}
 
-        {loading && (
-          <p className="text-sm text-slate-400">불러오는 중입니다...</p>
-        )}
+          {error && (
+            <p className="text-sm text-red-400 mt-4" aria-live="polite">
+              {error}
+            </p>
+          )}
 
-        {!loading && entries.length === 0 && (
-          <p className="text-sm text-slate-400">
-            아직 학습 기록이 없습니다. 위의 "새 항목 추가" 버튼을 눌러 추가해 보세요.
-          </p>
-        )}
+          {loading && (
+            <p className="text-sm text-slate-400 mt-4">불러오는 중입니다...</p>
+          )}
 
-        {!loading && entries.length > 0 && (
-          <div className="space-y-6">
-            {Object.entries(
-              entries
-                .filter((entry) => {
-                  const term = search.trim().toLowerCase();
-                  if (!term) return true;
-                  const haystack = [
-                    entry.title,
-                    entry.summary,
-                    entry.subject,
-                    entry.tags.join(' ')
-                  ]
-                    .join(' ')
-                    .toLowerCase();
-                  return haystack.includes(term);
-                })
-                .reduce<Record<string, LearningEntry[]>>((acc, entry) => {
-                  const key = entry.subject || '기타';
-                  acc[key] = acc[key] ? [...acc[key], entry] : [entry];
-                  return acc;
-                }, {})
-            ).map(([subject, list]) => (
-              <div
-                key={subject}
-                className="rounded-3xl border border-slate-800 bg-slate-900/80 p-4 space-y-3"
-              >
-                <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-semibold text-slate-100 md:text-base">
-                    {subject}
-                  </h3>
-                  <span className="text-[11px] text-slate-400">
-                    {list.length}개
-                  </span>
-                </div>
-                <div className="space-y-3">
-                  {list.map((entry) => (
-                    <article
-                      key={entry.id}
-                      className="rounded-3xl border border-slate-800 bg-slate-950/80 p-4 transition hover:-translate-y-0.5 hover:border-warmBeige/70 hover:bg-slate-900/80 hover:shadow-md"
-                    >
-                      <div className="mb-2 flex items-start justify-between gap-2">
-                        <div className="flex-1">
-                          <div className="mb-1 flex items-center gap-2 flex-wrap">
-                            <h3 className="text-sm font-semibold text-slate-100 md:text-base">
-                              {entry.title}
-                            </h3>
-                            {entry.draft && (
-                              <span className="rounded-full bg-yellow-900/30 px-2 py-0.5 text-[10px] text-yellow-300">
-                                Draft
-                              </span>
-                            )}
-                            {!entry.public && (
-                              <span className="rounded-full bg-red-900/30 px-2 py-0.5 text-[10px] text-red-300">
-                                Private
-                              </span>
-                            )}
-                          </div>
-                          <p className="mt-1 text-[11px] text-slate-400">
-                            {entry.endDate && entry.endDate !== entry.startDate
-                              ? `${entry.startDate} ~ ${entry.endDate}`
-                              : entry.startDate || '날짜 없음'}
-                          </p>
-                          <p className="mt-2 text-xs text-slate-300">{entry.summary}</p>
-                          {entry.tags && entry.tags.length > 0 && (
-                            <div className="mt-2 flex flex-wrap gap-1.5">
-                              {entry.tags.map((tag, idx) => (
-                                <span
-                                  key={idx}
-                                  className="rounded-full bg-slate-800/50 px-2 py-0.5 text-[10px] text-slate-400"
-                                >
-                                  #{tag}
-                                </span>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                        <Link
-                          href={`/admin/learning/${entry.id}`}
-                          className="rounded-full border border-slate-700 bg-slate-900 px-3 py-1 text-[11px] text-slate-300 transition hover:bg-slate-800 hover:border-warmBeige/50"
-                        >
-                          편집
-                        </Link>
-                      </div>
-                    </article>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </section>
+          {!loading && filtered.length === 0 && (
+            <p className="text-sm text-slate-400 mt-4">
+              해당 카테고리에 기록이 없습니다.
+            </p>
+          )}
+
+          {!loading && filtered.length > 0 && (
+            <div className="mt-6 grid gap-5 md:grid-cols-3">
+              {filtered.map((entry) => (
+                <Link 
+                  key={entry.id} 
+                  href={`/learning/${encodeURIComponent(entry.subject)}/${entry.id}?from=admin&category=${encodeURIComponent(activeCategory)}`}
+                  className="relative group block"
+                >
+                  <LearningEntryCard entry={entry} disableLink={true} />
+                  <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity z-20">
+                    <span className="rounded-full bg-blue-600 px-2 py-1 text-xs text-white shadow-lg">
+                      편집
+                    </span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
         </main>
       </div>
     </div>

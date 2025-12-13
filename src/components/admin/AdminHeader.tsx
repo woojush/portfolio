@@ -55,25 +55,32 @@ export function AdminHeader() {
         <p className="text-slate-400">{today}</p>
       </div>
       
-      <div className="flex gap-3 text-sm">
-        <Link 
-          href="/admin/homepage" 
-          className="rounded-lg bg-slate-800 px-4 py-2 text-slate-200 hover:bg-slate-700 transition"
-        >
-          홈페이지 설정
-        </Link>
-        <Link 
-          href="/admin/learning" 
-          className="rounded-lg bg-slate-800 px-4 py-2 text-slate-200 hover:bg-slate-700 transition"
-        >
-          Learning 관리
-        </Link>
-        <Link 
-          href="/admin/experience" 
-          className="rounded-lg bg-slate-800 px-4 py-2 text-slate-200 hover:bg-slate-700 transition"
-        >
-          Experience 관리
-        </Link>
+      <div className="flex flex-wrap gap-3 text-sm">
+        {[
+          { href: '/admin/dashboard', label: 'Dashboard' },
+          { href: '/admin/journey', label: 'Journey 관리' },
+          { href: '/admin/learning', label: 'Learning 관리' },
+          { href: '/admin/experience', label: 'Experience 관리' },
+          { href: '/admin/homepage', label: '홈페이지 설정' }
+        ].map((item) => {
+          const isActive =
+            pathname === item.href || pathname?.startsWith(`${item.href}/`);
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={[
+                'rounded-lg px-4 py-2 transition',
+                isActive
+                  ? 'bg-slate-700 text-slate-50'
+                  : 'bg-slate-800 text-slate-200 hover:bg-slate-700'
+              ].join(' ')}
+              aria-current={isActive ? 'page' : undefined}
+            >
+              {item.label}
+            </Link>
+          );
+        })}
         <button
           onClick={handleLogout}
           disabled={loggingOut}

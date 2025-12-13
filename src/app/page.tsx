@@ -37,6 +37,14 @@ export default async function HomePage() {
 
   return (
     <div className="relative min-h-screen">
+      <div className="absolute left-4 bottom-4 md:left-6 md:bottom-6 z-10">
+        <Link
+          href="/admin/login"
+          className="rounded-full border border-slate-600 px-3 py-1.5 text-xs font-medium text-slate-400 transition hover:border-slate-400 hover:text-slate-200"
+        >
+          관리자 로그인
+        </Link>
+      </div>
       {/* Full-screen background image with overlay */}
       <div className="fixed inset-0 -z-10">
         {heroImageUrl ? (
@@ -90,7 +98,7 @@ export default async function HomePage() {
                 ))}
               </div>
             )}
-            
+
             {/* Additional Content (Markdown) */}
             {additionalContent && (
               <div className="mt-8 max-w-2xl">
@@ -130,17 +138,6 @@ export default async function HomePage() {
           </div>
         </section>
 
-        {/* Footer with admin login link */}
-        <footer className="mt-auto px-4 py-6 md:px-6 lg:px-8">
-          <div className="mx-auto flex max-w-4xl justify-end">
-            <Link
-              href="/admin/login"
-              className="text-xs text-slate-300 transition hover:text-warmBeige"
-            >
-              관리자 로그인
-            </Link>
-          </div>
-        </footer>
       </div>
     </div>
   );

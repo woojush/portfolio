@@ -3,16 +3,26 @@
 // Admin Experience editor page
 
 import { useEffect, useState } from 'react';
-import { useRouter, useParams } from 'next/navigation';
+import { useRouter, useParams, useSearchParams } from 'next/navigation';
 import { experienceRepository } from '@/lib/repositories/experienceRepository';
 import type { ExperienceItem } from '@/lib/firestore/types';
 import { MarkdownEditor } from '@/components/admin/MarkdownEditor';
 
 export default function AdminExperienceEditorPage() {
   const params = useParams();
+  const searchParams = useSearchParams();
   const router = useRouter();
   const id = params.id as string;
   const isNew = id === 'new';
+  
+  // 이전 경로 가져오기
+  const from = searchParams.get('from');
+  const category = searchParams.get('category');
+  const backUrl = from === 'admin' && category
+    ? `/admin/experience?category=${encodeURIComponent(category)}`
+    : from === 'admin'
+    ? '/admin/experience'
+    : '/admin';
 
   const [loading, setLoading] = useState(!isNew);
   const [saving, setSaving] = useState(false);
@@ -21,10 +31,11 @@ export default function AdminExperienceEditorPage() {
   const [item, setItem] = useState<Partial<ExperienceItem>>({
     title: '',
     category: '',
+    thumbnailUrl: '',
+    period: '',
     startDate: '',
     endDate: '',
     summary: '',
-    images: [],
     content: '',
     public: false,
     draft: true
@@ -32,7 +43,11 @@ export default function AdminExperienceEditorPage() {
 
   useEffect(() => {
     loadExistingCategories();
-    if (!isNew) {
+    if (isNew) {
+      // 새 항목일 때 오늘 날짜로 자동 설정
+      const today = new Date().toISOString().split('T')[0];
+      setItem(prev => ({ ...prev, startDate: today }));
+    } else {
       loadItem();
     }
   }, [id, isNew]);
@@ -63,14 +78,31 @@ export default function AdminExperienceEditorPage() {
 
   async function handleSave(draft: boolean) {
     try {
+      if (!item.title || !item.category || !item.summary) {
+        alert('Title, Category, Summary는 필수입니다.');
+        return;
+      }
+      if (!item.content || item.content.trim().length === 0) {
+        alert('본문을 입력해 주세요.');
+        return;
+      }
+      if (!item.thumbnailUrl) {
+        alert('썸네일 이미지 URL을 입력해주세요.');
+        return;
+      }
       setSaving(true);
+      // startDate가 없으면 오늘 날짜로 설정
+      const today = new Date().toISOString().split('T')[0];
+      const startDate = item.startDate || today;
+      
       const itemData: Omit<ExperienceItem, 'id' | 'createdAt' | 'updatedAt'> = {
         title: item.title!,
         category: item.category!,
-        startDate: item.startDate!,
+        thumbnailUrl: item.thumbnailUrl!,
+        period: item.period || '',
+        startDate: startDate,
         endDate: item.endDate,
         summary: item.summary!,
-        images: item.images || [],
         content: item.content || '',
         public: !draft,
         draft
@@ -82,7 +114,7 @@ export default function AdminExperienceEditorPage() {
         await experienceRepository.update(id, itemData);
       }
 
-      router.push('/admin');
+      router.push(backUrl);
     } catch (error) {
       console.error('Error saving item:', error);
       alert('저장 중 오류가 발생했습니다.');
@@ -95,7 +127,7 @@ export default function AdminExperienceEditorPage() {
     if (!confirm('정말 이 항목을 삭제하시겠습니까?')) return;
     try {
       await experienceRepository.delete(id);
-      router.push('/admin');
+      router.push(backUrl);
     } catch (error) {
       console.error('Error deleting item:', error);
       alert('삭제 중 오류가 발생했습니다.');
@@ -116,7 +148,7 @@ export default function AdminExperienceEditorPage() {
       <div className="sticky top-0 z-10 flex items-center justify-between border-b border-slate-800 bg-slate-950/95 px-4 py-3 backdrop-blur">
         <button
           type="button"
-          onClick={() => router.push('/admin')}
+          onClick={() => router.push(backUrl)}
           className="text-sm text-slate-300 hover:text-slate-100"
         >
           ← Back
@@ -150,195 +182,209 @@ export default function AdminExperienceEditorPage() {
         </div>
       </div>
 
-      {/* Editor layout */}
-      <div className="flex flex-1 overflow-hidden">
-        {/* Left: Markdown Editor */}
-        <div className="flex-1 overflow-auto p-4">
-          <MarkdownEditor
-            value={item.content || ''}
-            onChange={(value) => setItem({ ...item, content: value })}
-          />
-        </div>
-
-        {/* Right: Metadata Sidebar */}
-        <div className="w-80 border-l border-slate-800 bg-slate-900/40 p-4 overflow-auto">
-          <div className="space-y-4">
-            <div>
-              <label
-                htmlFor="title-input"
-                className="mb-1 block text-xs font-medium text-slate-300 cursor-text"
-              >
-                Title *
-              </label>
-              <input
-                id="title-input"
-                type="text"
-                value={item.title || ''}
-                onChange={(e) =>
-                  setItem({ ...item, title: e.target.value })
-                }
-                onClick={(e) => e.currentTarget.select()}
-                onFocus={(e) => e.currentTarget.select()}
-                className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 focus:border-warmBeige focus:outline-none focus:ring-1 focus:ring-warmBeige/50 cursor-text"
-                placeholder="2023 겨울, 2024-1학기"
-              />
-            </div>
-
-            <div>
-              <label
-                htmlFor="category-input"
-                className="mb-1 block text-xs font-medium text-slate-300 cursor-text"
-              >
-                Category *
-              </label>
-              <div className="relative">
-                <div className="flex gap-2">
-                  <input
-                    id="category-input"
-                    type="text"
-                    value={item.category || ''}
-                    onChange={(e) =>
-                      setItem({ ...item, category: e.target.value })
-                    }
-                    onFocus={() => setShowCategoryDropdown(true)}
-                    className="flex-1 rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 focus:border-warmBeige focus:outline-none focus:ring-1 focus:ring-warmBeige/50 cursor-text"
-                    placeholder="part-time, project, club, military"
+      {/* Velog-style Editor layout */}
+      <div className="flex-1 overflow-auto">
+        <div className="mx-auto max-w-4xl p-6 space-y-6">
+          {/* 썸네일 URL 입력 */}
+          <div>
+            <label
+              htmlFor="thumbnail-input"
+              className="mb-2 block text-sm font-medium text-slate-300"
+            >
+              썸네일 이미지(URL) *
+            </label>
+            <div className="space-y-2">
+              {item.thumbnailUrl && (
+                <div className="relative w-full aspect-video rounded-lg overflow-hidden border border-slate-700 bg-slate-900">
+                  <img
+                    src={item.thumbnailUrl}
+                    alt="썸네일 미리보기"
+                    className="w-full h-full object-cover"
                   />
-                  {existingCategories.length > 0 && (
-                    <button
-                      type="button"
-                      onClick={() => setShowCategoryDropdown(!showCategoryDropdown)}
-                      className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-xs text-slate-300 hover:bg-slate-800 transition"
-                    >
-                      선택
-                    </button>
-                  )}
                 </div>
-                {showCategoryDropdown && existingCategories.length > 0 && (
-                  <div className="absolute z-10 mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 shadow-lg max-h-48 overflow-auto">
-                    {existingCategories.map((category) => (
-                      <button
-                        key={category}
-                        type="button"
-                        onClick={() => {
-                          setItem({ ...item, category });
-                          setShowCategoryDropdown(false);
-                        }}
-                        className="w-full px-3 py-2 text-left text-sm text-slate-300 hover:bg-slate-800 transition"
-                      >
-                        {category}
-                      </button>
-                    ))}
-                  </div>
+              )}
+              <input
+                id="thumbnail-input"
+                type="url"
+                value={item.thumbnailUrl || ''}
+                onChange={(e) =>
+                  setItem({ ...item, thumbnailUrl: e.target.value })
+                }
+                placeholder="https://example.com/image.jpg"
+                className="w-full rounded-lg border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100 focus:border-warmBeige focus:outline-none focus:ring-1 focus:ring-warmBeige/50"
+              />
+              <p className="text-xs text-slate-500">URL을 붙여넣으면 바로 미리보기가 갱신됩니다.</p>
+            </div>
+          </div>
+
+          {/* 제목 */}
+          <div>
+            <label
+              htmlFor="title-input"
+              className="mb-2 block text-sm font-medium text-slate-300"
+            >
+              제목 *
+            </label>
+            <input
+              id="title-input"
+              type="text"
+              value={item.title || ''}
+              onChange={(e) =>
+                setItem({ ...item, title: e.target.value })
+              }
+              onClick={(e) => e.currentTarget.select()}
+              onFocus={(e) => e.currentTarget.select()}
+              className="w-full rounded-lg border border-slate-700 bg-slate-950 px-4 py-3 text-lg font-semibold text-slate-100 focus:border-warmBeige focus:outline-none focus:ring-1 focus:ring-warmBeige/50"
+              placeholder="2023 겨울, 2024-1학기"
+            />
+          </div>
+
+          {/* Category */}
+          <div>
+            <label
+              htmlFor="category-input"
+              className="mb-2 block text-sm font-medium text-slate-300"
+            >
+              Category *
+            </label>
+            <div className="relative">
+              <div className="flex gap-2">
+                <input
+                  id="category-input"
+                  type="text"
+                  value={item.category || ''}
+                  onChange={(e) =>
+                    setItem({ ...item, category: e.target.value })
+                  }
+                  onFocus={() => setShowCategoryDropdown(true)}
+                  className="flex-1 rounded-lg border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100 focus:border-warmBeige focus:outline-none focus:ring-1 focus:ring-warmBeige/50"
+                  placeholder="part-time, project, club, military"
+                />
+                {existingCategories.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setShowCategoryDropdown(!showCategoryDropdown)}
+                    className="rounded-lg border border-slate-700 bg-slate-900 px-4 py-3 text-sm text-slate-300 hover:bg-slate-800 transition"
+                  >
+                    선택
+                  </button>
                 )}
               </div>
+              {showCategoryDropdown && existingCategories.length > 0 && (
+                <div className="absolute z-10 mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 shadow-lg max-h-48 overflow-auto">
+                  {existingCategories.map((category) => (
+                    <button
+                      key={category}
+                      type="button"
+                      onClick={() => {
+                        setItem({ ...item, category });
+                        setShowCategoryDropdown(false);
+                      }}
+                      className="w-full px-4 py-2 text-left text-sm text-slate-300 hover:bg-slate-800 transition"
+                    >
+                      {category}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
+          </div>
 
-            <div className="grid grid-cols-2 gap-2">
-              <div>
-                <label
-                  htmlFor="exp-start-date-input"
-                  className="mb-1 block text-xs font-medium text-slate-300 cursor-text"
-                >
-                  Start Date *
-                </label>
-                <input
-                  id="exp-start-date-input"
-                  type="date"
-                  value={item.startDate || ''}
-                  onChange={(e) =>
-                    setItem({ ...item, startDate: e.target.value })
-                  }
-                  className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 focus:border-warmBeige focus:outline-none focus:ring-1 focus:ring-warmBeige/50 cursor-text"
-                />
-              </div>
-              <div>
-                <label
-                  htmlFor="exp-end-date-input"
-                  className="mb-1 block text-xs font-medium text-slate-300 cursor-text"
-                >
-                  End Date
-                </label>
-                <input
-                  id="exp-end-date-input"
-                  type="date"
-                  value={item.endDate || ''}
-                  onChange={(e) =>
-                    setItem({ ...item, endDate: e.target.value })
-                  }
-                  className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 focus:border-warmBeige focus:outline-none focus:ring-1 focus:ring-warmBeige/50 cursor-text"
-                />
-              </div>
+          {/* Summary */}
+          <div>
+            <label
+              htmlFor="summary-input"
+              className="mb-2 block text-sm font-medium text-slate-300"
+            >
+              Summary *
+            </label>
+            <textarea
+              id="summary-input"
+              value={item.summary || ''}
+              onChange={(e) => setItem({ ...item, summary: e.target.value })}
+              onClick={(e) => e.currentTarget.select()}
+              onFocus={(e) => e.currentTarget.select()}
+              className="w-full rounded-lg border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100 focus:border-warmBeige focus:outline-none focus:ring-1 focus:ring-warmBeige/50"
+              placeholder="짧은 요약을 입력하세요"
+              rows={3}
+            />
+          </div>
+
+          {/* 본문 에디터 */}
+          <div>
+            <label className="mb-2 block text-sm font-medium text-slate-300">
+              본문 *
+            </label>
+            <div className="h-[600px]">
+              <MarkdownEditor
+                value={item.content || ''}
+                onChange={(value) => setItem({ ...item, content: value })}
+              />
             </div>
+          </div>
 
+          {/* 날짜 및 기타 설정 (작은 크기) */}
+          <div className="grid grid-cols-2 gap-4 pt-4 border-t border-slate-800">
             <div>
               <label
-                htmlFor="exp-summary-input"
-                className="mb-1 block text-xs font-medium text-slate-300 cursor-text"
+                htmlFor="exp-start-date-input"
+                className="mb-2 block text-xs font-medium text-slate-400"
               >
-                Summary *
+                Start Date *
               </label>
-              <textarea
-                id="exp-summary-input"
-                value={item.summary || ''}
+              <input
+                id="exp-start-date-input"
+                type="date"
+                value={item.startDate || ''}
                 onChange={(e) =>
-                  setItem({ ...item, summary: e.target.value })
+                  setItem({ ...item, startDate: e.target.value })
                 }
-                onClick={(e) => e.currentTarget.select()}
-                onFocus={(e) => e.currentTarget.select()}
-                rows={3}
-                className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 focus:border-warmBeige focus:outline-none focus:ring-1 focus:ring-warmBeige/50 cursor-text resize-y"
-                placeholder="요약을 입력하세요"
+                className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 focus:border-warmBeige focus:outline-none focus:ring-1 focus:ring-warmBeige/50"
               />
             </div>
-
             <div>
               <label
-                htmlFor="images-input"
-                className="mb-1 block text-xs font-medium text-slate-300 cursor-text"
+                htmlFor="exp-end-date-input"
+                className="mb-2 block text-xs font-medium text-slate-400"
               >
-                Images (URL, 한 줄씩)
+                End Date
               </label>
-              <textarea
-                id="images-input"
-                value={item.images?.join('\n') || ''}
-                onChange={(e) => {
-                  const images = e.target.value
-                    .split('\n')
-                    .map((i) => i.trim())
-                    .filter((i) => i.length > 0);
-                  setItem({ ...item, images });
-                }}
-                rows={3}
-                className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 focus:border-warmBeige focus:outline-none focus:ring-1 focus:ring-warmBeige/50 cursor-text resize-y"
-                placeholder="이미지 URL을 한 줄씩 입력하세요"
+              <input
+                id="exp-end-date-input"
+                type="date"
+                value={item.endDate || ''}
+                onChange={(e) =>
+                  setItem({ ...item, endDate: e.target.value })
+                }
+                className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 focus:border-warmBeige focus:outline-none focus:ring-1 focus:ring-warmBeige/50"
               />
             </div>
+          </div>
 
-            <div className="flex items-center gap-4">
-              <label className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={item.public || false}
-                  onChange={(e) =>
-                    setItem({ ...item, public: e.target.checked })
-                  }
-                  className="rounded border-slate-700 bg-slate-950"
-                />
-                <span className="text-xs text-slate-300">Public</span>
-              </label>
-              <label className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={item.draft || false}
-                  onChange={(e) =>
-                    setItem({ ...item, draft: e.target.checked })
-                  }
-                  className="rounded border-slate-700 bg-slate-950"
-                />
-                <span className="text-xs text-slate-300">Draft</span>
-              </label>
-            </div>
+          {/* Public/Draft 체크박스 */}
+          <div className="flex items-center gap-6">
+            <label className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={item.public || false}
+                onChange={(e) =>
+                  setItem({ ...item, public: e.target.checked })
+                }
+                className="rounded border-slate-700 bg-slate-950"
+              />
+              <span className="text-sm text-slate-300">Public</span>
+            </label>
+            <label className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={item.draft || false}
+                onChange={(e) =>
+                  setItem({ ...item, draft: e.target.checked })
+                }
+                className="rounded border-slate-700 bg-slate-950"
+              />
+              <span className="text-sm text-slate-300">Draft</span>
+            </label>
           </div>
         </div>
       </div>

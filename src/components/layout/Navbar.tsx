@@ -12,8 +12,7 @@ const publicNavItems = [
   { href: '/', label: 'Home' },
   { href: '/journey', label: 'Journey' },
   { href: '/learning', label: 'Learning' },
-  { href: '/experience', label: 'Experience' },
-  { href: '/contact', label: 'Contact' }
+  { href: '/experience', label: 'Experience' }
 ];
 
 const adminNavItems = [
@@ -157,19 +156,13 @@ export function Navbar() {
       return;
     }
 
-    // 일반 페이지: 화이트 계열 고정
-    const publicBg = '#f8fafc'; // slate-50
+    // 일반 페이지: 화이트 계열 고정 (배경 이미지 여부와 관계없이 동일하게 적용)
+    const publicBg = 'rgba(241, 245, 249, 1)'; // slate-100
     const palette = pickPalette(publicBg);
-    
-    // 홈에서 배경 이미지가 있을 경우 기본 스타일 유지
-    if (pathname === '/' && hasHeroImage) {
-      document.body.style.backgroundColor = '';
-      document.body.style.color = '';
-    } else {
-      document.body.style.backgroundColor = publicBg;
-      document.body.style.color = palette.text;
-    }
-    
+
+    document.body.style.backgroundColor = publicBg;
+    document.body.style.color = palette.text;
+
     document.documentElement.style.setProperty('--surface-bg', publicBg);
     document.documentElement.style.setProperty('--card-bg', palette.card);
     document.documentElement.style.setProperty('--border-color', palette.cardBorder);
@@ -221,7 +214,12 @@ export function Navbar() {
           ? 'backdrop-blur shadow-lg'
           : 'bg-transparent'
       ].join(' ')}
-      style={{ backgroundColor: navColors.bg }}
+      style={{
+        backgroundColor: navColors.bg,
+        borderBottom: isAdminPage
+          ? '1px solid rgba(255,255,255,0.08)'
+          : '1px solid rgba(15,23,42,0.06)'
+      }}
     >
       <nav className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 md:px-6">
         <Link
@@ -255,18 +253,12 @@ export function Navbar() {
               <li key={item.href}>
                 <Link
                   href={item.href}
-                  className="rounded-full px-3 py-1.5 transition-colors"
+                  aria-current={isActive ? 'page' : undefined}
+                  className="rounded-full px-3 py-1.5 font-medium transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
                   style={{
                     color: isActive ? navColors.activeText : navColors.text,
-                    backgroundColor: isActive ? navColors.activeBg : 'transparent'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.color = navColors.hoverText;
-                    e.currentTarget.style.backgroundColor = navColors.hoverBg;
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.color = isActive ? navColors.activeText : navColors.text;
-                    e.currentTarget.style.backgroundColor = isActive ? navColors.activeBg : 'transparent';
+                    backgroundColor: isActive ? navColors.activeBg : 'transparent',
+                    outlineColor: navColors.hoverText
                   }}
                 >
                   {item.label}
@@ -279,15 +271,10 @@ export function Navbar() {
               <button
                 onClick={handleLogout}
                 disabled={loggingOut}
-                className="rounded-full px-3 py-1.5 text-xs transition-colors disabled:opacity-50"
-                style={{ color: navColors.text }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.color = navColors.hoverText;
-                  e.currentTarget.style.backgroundColor = navColors.hoverBg;
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.color = navColors.text;
-                  e.currentTarget.style.backgroundColor = 'transparent';
+                className="rounded-full px-3 py-1.5 text-xs transition-colors disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+                style={{
+                  color: navColors.text,
+                  outlineColor: navColors.hoverText
                 }}
                 title="로그아웃"
               >

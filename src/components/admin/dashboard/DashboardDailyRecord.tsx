@@ -107,7 +107,11 @@ export function DashboardDailyRecord({ today }: DashboardDailyRecordProps) {
     return Number.isFinite(n) ? n : null;
   };
 
-  async function handleSave() {
+  async function handleSave(preserveEditMode: boolean | unknown = false) {
+    const shouldPreserveEditMode = typeof preserveEditMode === 'boolean' 
+      ? preserveEditMode 
+      : false;
+    
     if (!currentDate) return;
     try {
       setSaving(true);
@@ -118,14 +122,25 @@ export function DashboardDailyRecord({ today }: DashboardDailyRecordProps) {
         moodEvening: normalizeMood(moodEvening)
       };
 
-      if (sleepStart) payload.sleepStart = sleepStart;
-      if (sleepEnd) payload.sleepEnd = sleepEnd;
+      // 수면 시간은 항상 저장 (빈 값이어도 null로 저장)
+      payload.sleepStart = sleepStart || null;
+      payload.sleepEnd = sleepEnd || null;
       if (weather.trim()) payload.weather = weather.trim(); else payload.weather = null;
       if (temperature) payload.temperature = parseFloat(temperature); else payload.temperature = null;
       if (memo.trim()) payload.memo = memo.trim(); else payload.memo = null;
 
       await dashboardRepository.saveDailyRecord(payload);
-      await loadRecord(); // Reload to update UI state
+      
+      // 편집 모드를 유지해야 하는 경우 (수면시간 자동 저장 등)
+      if (shouldPreserveEditMode) {
+        // 데이터만 업데이트
+        const updated = await dashboardRepository.getDailyRecord(currentDate);
+        if (updated) {
+          setRecord(updated);
+        }
+      } else {
+        await loadRecord(); // Reload to update UI state
+      }
     } catch (error) {
       console.error('Error saving daily record:', error);
       alert('저장 중 오류가 발생했습니다.');
@@ -179,7 +194,7 @@ export function DashboardDailyRecord({ today }: DashboardDailyRecordProps) {
 
         <div className="flex gap-2">
            <button
-             onClick={() => window.open('/admin/dashboard/habits/stats', '_self')}
+             onClick={() => window.open('/admin/dashboard/daily-record/stats', '_self')}
              className="text-xs text-slate-400 hover:text-slate-200"
            >
              통계
@@ -204,14 +219,20 @@ export function DashboardDailyRecord({ today }: DashboardDailyRecordProps) {
               <input
                 type="time"
                 value={sleepStart}
-                onChange={(e) => setSleepStart(e.target.value)}
+                onChange={(e) => {
+                  setSleepStart(e.target.value);
+                }}
+                onBlur={() => handleSave(true)}
                 className="rounded border border-slate-700 bg-slate-900 px-2 py-1 text-sm text-slate-200 focus:border-slate-500 focus:outline-none"
               />
               <span className="text-slate-500">~</span>
               <input
                 type="time"
                 value={sleepEnd}
-                onChange={(e) => setSleepEnd(e.target.value)}
+                onChange={(e) => {
+                  setSleepEnd(e.target.value);
+                }}
+                onBlur={() => handleSave(true)}
                 className="rounded border border-slate-700 bg-slate-900 px-2 py-1 text-sm text-slate-200 focus:border-slate-500 focus:outline-none"
               />
               {sleepStart && sleepEnd && (
@@ -325,7 +346,7 @@ export function DashboardDailyRecord({ today }: DashboardDailyRecordProps) {
         {isEditing && (
           <div className="flex justify-end pt-2">
             <button
-              onClick={handleSave}
+              onClick={() => handleSave()}
               disabled={saving}
               className="rounded bg-slate-800 px-4 py-2 text-sm font-semibold text-slate-200 hover:bg-slate-700 disabled:opacity-50"
             >

@@ -1,5 +1,5 @@
 // Firestore CRUD functions for Learning entries.
-// Collection name: "learningEntries"
+// Collection name: "learningItems" (falls back to legacy "learningEntries")
 
 import {
   collection,
@@ -16,6 +16,9 @@ import {
   where
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase/client';
+
+const COLLECTION_NEW = 'learningItems';
+const COLLECTION_LEGACY = 'learningEntries';
 
 export interface LearningEntry {
   id: string;
@@ -53,11 +56,20 @@ function docToEntry(
  */
 export async function getLearningEntries(): Promise<LearningEntry[]> {
   try {
-    const q = query(
-      collection(db, 'learningEntries'),
+    const qNew = query(
+      collection(db, COLLECTION_NEW),
       orderBy('startDate', 'desc')
     );
-    const snapshot = await getDocs(q);
+    const qLegacy = query(
+      collection(db, COLLECTION_LEGACY),
+      orderBy('startDate', 'desc')
+    );
+
+    let snapshot = await getDocs(qNew);
+    if (snapshot.empty) {
+      snapshot = await getDocs(qLegacy);
+    }
+
     return snapshot.docs.map(docToEntry);
   } catch (error) {
     console.error('Error fetching learning entries:', error);
@@ -72,12 +84,22 @@ export async function getLearningEntriesBySubject(
   subject: string
 ): Promise<LearningEntry[]> {
   try {
-    const q = query(
-      collection(db, 'learningEntries'),
+    const qNew = query(
+      collection(db, COLLECTION_NEW),
       where('subject', '==', subject),
       orderBy('startDate', 'desc')
     );
-    const snapshot = await getDocs(q);
+    const qLegacy = query(
+      collection(db, COLLECTION_LEGACY),
+      where('subject', '==', subject),
+      orderBy('startDate', 'desc')
+    );
+
+    let snapshot = await getDocs(qNew);
+    if (snapshot.empty) {
+      snapshot = await getDocs(qLegacy);
+    }
+
     return snapshot.docs.map(docToEntry);
   } catch (error) {
     console.error('Error fetching learning entries by subject:', error);
@@ -90,9 +112,15 @@ export async function getLearningEntriesBySubject(
  */
 export async function getLearningEntry(id: string): Promise<LearningEntry | null> {
   try {
-    const docRef = doc(db, 'learningEntries', id);
-    const docSnap = await getDoc(docRef);
-    if (!docSnap.exists()) return null;
+    const docRefNew = doc(db, COLLECTION_NEW, id);
+    const docRefLegacy = doc(db, COLLECTION_LEGACY, id);
+
+    let docSnap = await getDoc(docRefNew);
+    if (!docSnap.exists()) {
+      docSnap = await getDoc(docRefLegacy);
+      if (!docSnap.exists()) return null;
+    }
+
     return docToEntry(docSnap as QueryDocumentSnapshot<DocumentData>);
   } catch (error) {
     console.error('Error fetching learning entry:', error);
@@ -149,7 +177,7 @@ export async function addLearningEntry(
 ): Promise<string> {
   try {
     const now = new Date().toISOString();
-    const docRef = await addDoc(collection(db, 'learningEntries'), {
+    const docRef = await addDoc(collection(db, COLLECTION_NEW), {
       title: entry.title,
       subject: entry.subject,
       startDate: entry.startDate,
@@ -175,7 +203,12 @@ export async function updateLearningEntry(
   updates: Partial<Omit<LearningEntry, 'id' | 'createdAt' | 'updatedAt'>>
 ): Promise<void> {
   try {
-    const docRef = doc(db, 'learningEntries', id);
+    const docRefNew = doc(db, COLLECTION_NEW, id);
+    const docRefLegacy = doc(db, COLLECTION_LEGACY, id);
+    const targetRef = (await getDoc(docRefNew)).exists()
+      ? docRefNew
+      : docRefLegacy;
+
     const updateData: Record<string, any> = {
       updatedAt: new Date().toISOString()
     };
@@ -187,7 +220,7 @@ export async function updateLearningEntry(
     if (updates.tags !== undefined) updateData.tags = updates.tags;
     if (updates.summary !== undefined) updateData.summary = updates.summary;
     if (updates.content !== undefined) updateData.content = updates.content;
-    await updateDoc(docRef, updateData);
+    await updateDoc(targetRef, updateData);
   } catch (error) {
     console.error('Error updating learning entry:', error);
     throw error;
@@ -199,8 +232,12 @@ export async function updateLearningEntry(
  */
 export async function deleteLearningEntry(id: string): Promise<void> {
   try {
-    const docRef = doc(db, 'learningEntries', id);
-    await deleteDoc(docRef);
+    const docRefNew = doc(db, COLLECTION_NEW, id);
+    const docRefLegacy = doc(db, COLLECTION_LEGACY, id);
+    const targetRef = (await getDoc(docRefNew)).exists()
+      ? docRefNew
+      : docRefLegacy;
+    await deleteDoc(targetRef);
   } catch (error) {
     console.error('Error deleting learning entry:', error);
     throw error;

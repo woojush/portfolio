@@ -29,13 +29,14 @@ export function ExperienceSection() {
   }, []);
 
   return (
-    <section id="experience" className="section-container">
-      <header className="section-header">
-        <h2 className="text-section-title">Experience</h2>
-        <p className="mt-2 max-w-2xl text-body text-slate-300">
-          화려한 이력보다는, 어떤 현장에서 무엇을 배우고 느꼈는지를 중심으로
-          정리합니다. 알바와 동아리, 작은 프로젝트에서의 경험이 지금의 저를
-          조금씩 만들어 가고 있습니다.
+    <section
+      id="experience"
+      className="section-container py-10 md:py-14"
+    >
+      <header className="section-header space-y-3">
+        <h2 className="text-4xl font-bold md:text-5xl">Experience</h2>
+        <p className="mt-1 max-w-3xl text-lg text-slate-300 md:text-xl">
+          경험의 힘을 믿고 나눕니다.
         </p>
       </header>
 
@@ -56,7 +57,7 @@ export function ExperienceSection() {
       )}
 
       {!loading && !error && items.length > 0 && (
-        <div className="space-y-4">
+        <div className="grid gap-5 md:grid-cols-3">
           {items.map((item) => (
             <ExperienceCard key={item.id} item={item} />
           ))}

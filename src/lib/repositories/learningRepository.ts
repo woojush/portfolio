@@ -18,6 +18,9 @@ import {
 import { db } from '@/lib/firebase/client';
 import type { LearningEntry } from '@/lib/firestore/types';
 
+const COLLECTION_NEW = 'learningItems';
+const COLLECTION_LEGACY = 'learningEntries';
+
 function docToEntry(
   docSnap: QueryDocumentSnapshot<DocumentData>
 ): LearningEntry {
@@ -26,11 +29,14 @@ function docToEntry(
     id: docSnap.id,
     title: data.title ?? '',
     subject: data.subject ?? '',
+    thumbnailUrl: data.thumbnailUrl ?? '',
     startDate: data.startDate,
     endDate: data.endDate,
     tags: Array.isArray(data.tags) ? data.tags : [],
     summary: data.summary ?? '',
     content: data.content ?? '',
+    authorName: data.authorName,
+    authorImageUrl: data.authorImageUrl,
     public: data.public ?? false,
     draft: data.draft ?? false,
     createdAt: data.createdAt ?? '',
@@ -45,11 +51,20 @@ export const learningRepository = {
   async getPublicEntries(): Promise<LearningEntry[]> {
     try {
       // Fetch all and filter client-side to avoid index requirement
-      const q = query(
-        collection(db, 'learningEntries'),
+      const qNew = query(
+        collection(db, COLLECTION_NEW),
         orderBy('startDate', 'desc')
       );
-      const snapshot = await getDocs(q);
+      const qLegacy = query(
+        collection(db, COLLECTION_LEGACY),
+        orderBy('startDate', 'desc')
+      );
+
+      let snapshot = await getDocs(qNew);
+      if (snapshot.empty) {
+        snapshot = await getDocs(qLegacy);
+      }
+
       const entries = snapshot.docs.map(docToEntry);
       // Filter public and non-draft entries
       return entries.filter((entry) => entry.public && !entry.draft);
@@ -64,11 +79,20 @@ export const learningRepository = {
    */
   async getAllEntries(): Promise<LearningEntry[]> {
     try {
-      const q = query(
-        collection(db, 'learningEntries'),
+      const qNew = query(
+        collection(db, COLLECTION_NEW),
         orderBy('startDate', 'desc')
       );
-      const snapshot = await getDocs(q);
+      const qLegacy = query(
+        collection(db, COLLECTION_LEGACY),
+        orderBy('startDate', 'desc')
+      );
+
+      let snapshot = await getDocs(qNew);
+      if (snapshot.empty) {
+        snapshot = await getDocs(qLegacy);
+      }
+
       return snapshot.docs.map(docToEntry);
     } catch (error) {
       console.error('Error fetching all learning entries:', error);
@@ -82,11 +106,20 @@ export const learningRepository = {
   async getEntriesBySubject(subject: string): Promise<LearningEntry[]> {
     try {
       // Fetch all and filter client-side to avoid index requirement
-      const q = query(
-        collection(db, 'learningEntries'),
+      const qNew = query(
+        collection(db, COLLECTION_NEW),
         orderBy('startDate', 'desc')
       );
-      const snapshot = await getDocs(q);
+      const qLegacy = query(
+        collection(db, COLLECTION_LEGACY),
+        orderBy('startDate', 'desc')
+      );
+
+      let snapshot = await getDocs(qNew);
+      if (snapshot.empty) {
+        snapshot = await getDocs(qLegacy);
+      }
+
       const entries = snapshot.docs.map(docToEntry);
       // Filter by subject, public and non-draft entries
       return entries
@@ -103,9 +136,15 @@ export const learningRepository = {
    */
   async getEntryById(id: string, admin = false): Promise<LearningEntry | null> {
     try {
-      const docRef = doc(db, 'learningEntries', id);
-      const docSnap = await getDoc(docRef);
-      if (!docSnap.exists()) return null;
+      const docRefNew = doc(db, COLLECTION_NEW, id);
+      const docRefLegacy = doc(db, COLLECTION_LEGACY, id);
+
+      let docSnap = await getDoc(docRefNew);
+      if (!docSnap.exists()) {
+        docSnap = await getDoc(docRefLegacy);
+        if (!docSnap.exists()) return null;
+      }
+
       const entry = docToEntry(docSnap as QueryDocumentSnapshot<DocumentData>);
       if (!admin && (!entry.public || entry.draft)) return null;
       return entry;
@@ -167,7 +206,7 @@ export const learningRepository = {
   ): Promise<string> {
     try {
       const now = new Date().toISOString();
-      const docRef = await addDoc(collection(db, 'learningEntries'), {
+      const docRef = await addDoc(collection(db, COLLECTION_NEW), {
         ...entry,
         createdAt: now,
         updatedAt: now
@@ -187,8 +226,14 @@ export const learningRepository = {
     updates: Partial<Omit<LearningEntry, 'id' | 'createdAt' | 'updatedAt'>>
   ): Promise<void> {
     try {
-      const docRef = doc(db, 'learningEntries', id);
-      await updateDoc(docRef, {
+      const docRefNew = doc(db, COLLECTION_NEW, id);
+      const docRefLegacy = doc(db, COLLECTION_LEGACY, id);
+
+      const targetRef = (await getDoc(docRefNew)).exists()
+        ? docRefNew
+        : docRefLegacy;
+
+      await updateDoc(targetRef, {
         ...updates,
         updatedAt: new Date().toISOString()
       });
@@ -203,8 +248,14 @@ export const learningRepository = {
    */
   async delete(id: string): Promise<void> {
     try {
-      const docRef = doc(db, 'learningEntries', id);
-      await deleteDoc(docRef);
+      const docRefNew = doc(db, COLLECTION_NEW, id);
+      const docRefLegacy = doc(db, COLLECTION_LEGACY, id);
+
+      const targetRef = (await getDoc(docRefNew)).exists()
+        ? docRefNew
+        : docRefLegacy;
+
+      await deleteDoc(targetRef);
     } catch (error) {
       console.error('Error deleting learning entry:', error);
       throw error;

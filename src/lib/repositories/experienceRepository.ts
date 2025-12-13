@@ -21,16 +21,27 @@ function docToEntry(
   docSnap: QueryDocumentSnapshot<DocumentData>
 ): ExperienceItem {
   const data = docSnap.data();
-  // Backward compatibility: periodLabel → title
+  // Backward compatibility: periodLabel → title, learnings → period
   const title = data.title ?? data.periodLabel ?? '';
+  
+  // period 필드 처리: period가 있으면 사용, 없으면 learnings 배열의 첫 번째 요소 사용
+  let period = '';
+  if (data.period && typeof data.period === 'string') {
+    period = data.period;
+  } else if (Array.isArray(data.learnings) && data.learnings.length > 0) {
+    const firstLearning = data.learnings[0];
+    period = typeof firstLearning === 'string' ? firstLearning : '';
+  }
+  
   return {
     id: docSnap.id,
     title,
     category: data.category ?? '',
+    thumbnailUrl: data.thumbnailUrl ?? '',
+    period,
     startDate: data.startDate ?? '',
     endDate: data.endDate,
     summary: data.summary ?? '',
-    images: Array.isArray(data.images) ? data.images : [],
     content: data.content,
     public: data.public ?? false,
     draft: data.draft ?? false,

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { Navbar } from '@/components/layout/Navbar';
+import { FooterWrapper } from '@/components/layout/FooterWrapper';
 
 export const metadata: Metadata = {
   title: 'Shin Woo-Ju | Personal Archive',
@@ -15,9 +16,13 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ko">
-      <body>
+      <body
+        className="bg-slate-100 text-slate-900 min-h-screen flex flex-col"
+        style={{ backgroundColor: 'rgba(241, 245, 249, 1)' }}
+      >
         <Navbar />
-        {children}
+        <main className="flex-1">{children}</main>
+        <FooterWrapper />
       </body>
     </html>
   );
