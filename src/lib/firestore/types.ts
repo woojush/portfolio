@@ -28,6 +28,9 @@ export interface ExperienceItem {
   endDate?: string; // "YYYY-MM-DD"
   summary: string;
   content?: string; // markdown (optional)
+  authorName?: string; // 작성자 이름
+  authorImageUrl?: string; // 작성자 프로필 이미지 URL
+  tags?: string[]; // 태그 목록
   public: boolean;
   draft: boolean;
   createdAt: string;

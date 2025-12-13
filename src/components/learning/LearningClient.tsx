@@ -217,10 +217,10 @@ export function LearningClient({ entries, subjects, initialSubject }: LearningCl
                 router.push('/learning');
               }}
               className={[
-                'rounded-full px-3 py-1 text-xs md:text-sm transition border',
+                'rounded-full px-3 py-1 text-xs md:text-sm transition border border-black',
                 filterType === 'category'
-                  ? 'border-slate-400 bg-blue-500'
-                  : 'border-slate-300 bg-white text-slate-600 hover:border-slate-400 hover:bg-slate-50'
+                  ? 'bg-blue-500'
+                  : 'bg-white text-slate-600 hover:border-slate-400 hover:bg-slate-50'
               ].join(' ')}
               style={filterType === 'category' ? { color: 'var(--surface-bg)' } : undefined}
             >
@@ -235,10 +235,10 @@ export function LearningClient({ entries, subjects, initialSubject }: LearningCl
                 router.push('/learning');
               }}
               className={[
-                'rounded-full px-3 py-1 text-xs md:text-sm transition border',
+                'rounded-full px-3 py-1 text-xs md:text-sm transition border border-black',
                 filterType === 'period'
-                  ? 'border-slate-400 bg-blue-500'
-                  : 'border-slate-300 bg-white text-slate-600 hover:border-slate-400 hover:bg-slate-50'
+                  ? 'bg-blue-500'
+                  : 'bg-white text-slate-600 hover:border-slate-400 hover:bg-slate-50'
               ].join(' ')}
               style={filterType === 'period' ? { color: 'var(--surface-bg)' } : undefined}
             >
