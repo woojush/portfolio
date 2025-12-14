@@ -172,7 +172,7 @@ export function MarkdownRenderer({ content, className }: MarkdownRendererProps) 
 
         // 슬라이더 HTML 생성
         const sliderHTML = `
-          <div class="relative w-1/2 my-4">
+          <div class="relative w-3/5 my-4">
             <div class="relative overflow-hidden rounded-lg bg-slate-100" id="${sliderId}">
               <div class="flex transition-transform duration-300 ease-in-out" data-current-index="0" style="transform: translateX(0%)">
                 ${imagesData.map((img, idx) => `
