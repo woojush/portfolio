@@ -58,7 +58,7 @@ export function Navbar() {
   const [isLoggedIn, refreshAuth] = useIsLoggedIn();
   const [displayName, setDisplayName] = useState('Shin Woo-Ju');
   const [hasHeroImage, setHasHeroImage] = useState(false);
-  const isAdminPage = pathname?.startsWith('/admin') && pathname !== '/admin/login';
+  const isAdminPage = pathname ? pathname.startsWith('/admin') && pathname !== '/admin/login' : false;
   const [loggingOut, setLoggingOut] = useState(false);
 
   // 일반 화면: 화이트 계열 고정, 관리자: 네이비 고정
@@ -169,11 +169,6 @@ export function Navbar() {
     document.documentElement.style.setProperty('--text-primary', palette.text);
     document.documentElement.style.setProperty('--text-muted', palette.muted);
   }, [isAdminPage, hasHeroImage, pathname]);
-
-  // 관리자 페이지에서는 Navbar를 표시하지 않음 (각 페이지에 AdminHeader 사용)
-  if (isAdminPage) {
-    return null;
-  }
 
   // 관리자 로그인 시에는 관리용 네비게이션만 표시
   const navItems = isLoggedIn ? adminNavItems : publicNavItems;
