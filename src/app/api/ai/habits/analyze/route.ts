@@ -184,8 +184,48 @@ ${habitId ? `## 개별 습관 상세 정보
       } catch (err: any) {
         failedModels.push(modelName);
         lastError = err;
+        
+        const errorMessage = err?.message || '';
+        
+        // 429 (할당량 초과) 오류 처리
+        if (errorMessage.includes('429') || errorMessage.includes('Too Many Requests') || errorMessage.includes('quota')) {
+          // 재시도 시간 추출 (RetryInfo에서 retryDelay 추출)
+          let retryDelay = 60; // 기본값: 60초
+          try {
+            const retryMatch = errorMessage.match(/Please retry in ([\d.]+)s/i);
+            if (retryMatch) {
+              retryDelay = Math.ceil(parseFloat(retryMatch[1]));
+            } else {
+              // JSON에서 추출 시도
+              const jsonMatch = errorMessage.match(/retryDelay[":\s]+"?(\d+)"?/i);
+              if (jsonMatch) {
+                retryDelay = Math.ceil(parseFloat(jsonMatch[1]));
+              }
+            }
+          } catch (e) {
+            // 추출 실패 시 기본값 사용
+          }
+          
+          // 다음 모델 시도 (같은 모델이면 건너뛰기)
+          const isQuotaExceeded = errorMessage.includes('quota') || errorMessage.includes('Quota exceeded');
+          if (isQuotaExceeded && modelName === 'models/gemini-2.5-flash') {
+            // 무료 티어 할당량 초과 시 다른 모델로 시도
+            continue;
+          }
+          
+          // 모든 모델에서 할당량 초과인 경우
+          if (failedModels.length >= modelsToTry.length || isQuotaExceeded) {
+            throw {
+              ...err,
+              quotaExceeded: true,
+              retryAfter: retryDelay,
+              message: `일일 사용 할당량(20회)을 초과했습니다. 약 ${Math.ceil(retryDelay / 60)}분 후 다시 시도해주세요.`
+            };
+          }
+        }
+        
         // 404가 아니면 다른 오류이므로 중단
-        if (!err?.message?.includes('404') && !err?.message?.includes('not found')) {
+        if (!errorMessage.includes('404') && !errorMessage.includes('not found')) {
           throw err;
         }
         // 404면 다음 모델 시도
@@ -202,20 +242,47 @@ ${habitId ? `## 개별 습관 상세 정보
   } catch (err: any) {
     let errorMessage = 'AI 분석 중 오류가 발생했습니다.';
     let statusCode = 500;
+    let retryAfter: number | undefined;
     
-    if (err?.message?.includes('429') || err?.status === 429) {
-      errorMessage = 'API 할당량이 초과되었습니다. 잠시 후 다시 시도해주세요.';
+    const errMessage = err?.message || '';
+    
+    // 할당량 초과 오류 처리
+    if (err?.quotaExceeded || errMessage.includes('429') || errMessage.includes('Too Many Requests') || errMessage.includes('quota') || errMessage.includes('Quota exceeded')) {
       statusCode = 429;
-    } else if (err?.message?.includes('401') || err?.status === 401) {
+      
+      // 이미 포맷된 메시지가 있으면 사용, 없으면 기본 메시지
+      if (err?.message && !errMessage.includes('[GoogleGenerativeAI Error]')) {
+        errorMessage = err.message;
+      } else {
+        retryAfter = err?.retryAfter || 60;
+        const minutes = retryAfter ? Math.ceil(retryAfter / 60) : 1;
+        errorMessage = `일일 사용 할당량(20회)을 초과했습니다. 약 ${minutes}분 후 다시 시도해주세요.\n\n무료 플랜은 하루에 20회까지 사용 가능합니다. 내일 다시 시도하거나 유료 플랜으로 업그레이드하세요.`;
+      }
+    } else if (errMessage.includes('401') || err?.status === 401) {
       errorMessage = 'API 키가 유효하지 않습니다. GEMINI_API_KEY를 확인해주세요.';
       statusCode = 401;
     } else {
-      errorMessage = err?.message || (typeof err === 'string' ? err : 'AI 분석 중 오류가 발생했습니다.');
+      // 기술적 오류 메시지 정리
+      if (errMessage.includes('[GoogleGenerativeAI Error]')) {
+        // 기술적 세부사항 제거하고 사용자 친화적 메시지로 변환
+        if (errMessage.includes('quota') || errMessage.includes('Quota exceeded')) {
+          errorMessage = '일일 사용 할당량을 초과했습니다. 내일 다시 시도해주세요.';
+          statusCode = 429;
+        } else {
+          errorMessage = 'AI 분석 서비스에 일시적인 문제가 발생했습니다. 잠시 후 다시 시도해주세요.';
+        }
+      } else {
+        errorMessage = errMessage || 'AI 분석 중 오류가 발생했습니다.';
+      }
     }
     
     console.error('Gemini analysis error:', err);
     return NextResponse.json(
-      { error: errorMessage, detail: err?.message || errorMessage },
+      { 
+        error: errorMessage, 
+        detail: errMessage,
+        retryAfter: retryAfter ? retryAfter : undefined
+      },
       { status: statusCode }
     );
   }

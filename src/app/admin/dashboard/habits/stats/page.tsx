@@ -176,7 +176,14 @@ export default function HabitStatsPage() {
         stack: error.stack,
         name: error.name
       });
-      alert(`AI 분석 중 오류가 발생했습니다: ${error.message || '알 수 없는 오류'}`);
+      let errorMessage = error?.message || '알 수 없는 오류';
+      
+      // 할당량 초과 오류를 더 친화적으로 표시
+      if (errorMessage.includes('할당량') || errorMessage.includes('quota') || errorMessage.includes('429')) {
+        errorMessage = '일일 사용 할당량(20회)을 초과했습니다.\n\n무료 플랜은 하루에 20회까지 사용 가능합니다. 내일 다시 시도해주세요.';
+      }
+      
+      alert(`AI 분석 중 오류가 발생했습니다:\n\n${errorMessage}`);
     } finally {
       console.log('🏁 AI 분석 프로세스 종료');
       setAnalyzing(false);
