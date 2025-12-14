@@ -61,6 +61,11 @@ export function Navbar() {
   const isAdminPage = pathname ? pathname.startsWith('/admin') && pathname !== '/admin/login' : false;
   const [loggingOut, setLoggingOut] = useState(false);
 
+  // 디버깅: Navbar 렌더링 확인
+  useEffect(() => {
+    console.log('Navbar rendered:', { pathname, isAdminPage, isLoggedIn });
+  }, [pathname, isAdminPage, isLoggedIn]);
+
   // 일반 화면: 화이트 계열 고정, 관리자: 네이비 고정
   const navColors = isAdminPage
     ? {
@@ -201,19 +206,24 @@ export function Navbar() {
   // 짙은 네이비 반투명 상단바 고정 (사진 위에서도 가독성 확보)
   const shouldShowBackground = true;
 
+  // Navbar 항상 렌더링 (사용자 페이지에서도 표시)
   return (
     <header
       className={[
-        'sticky top-0 z-50 transition-all duration-300',
+        'sticky top-0 z-50 w-full transition-all duration-300',
         shouldShowBackground
-          ? 'backdrop-blur shadow-lg'
+          ? 'backdrop-blur-md shadow-lg'
           : 'bg-transparent'
       ].join(' ')}
       style={{
         backgroundColor: navColors.bg,
         borderBottom: isAdminPage
           ? '1px solid rgba(255,255,255,0.08)'
-          : '1px solid rgba(15,23,42,0.06)'
+          : '1px solid rgba(15,23,42,0.06)',
+        position: 'sticky',
+        top: 0,
+        zIndex: 50,
+        width: '100%'
       }}
     >
       <nav className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 md:px-6">
