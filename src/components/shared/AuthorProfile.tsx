@@ -24,7 +24,7 @@ export function AuthorProfile({ authorName, authorImageUrl, date }: AuthorProfil
 
   // Fixed author information
   const displayName = authorName || '신우주';
-  const defaultImageUrl = 'https://media.licdn.com/dms/image/v2/D5603AQG2XQUdfduCUQ/profile-displayphoto-shrink_400_400/B56ZQblPXKG8Ag-/0/1735629535101?e=1767225600&v=beta&t=UepoSlpFMK9ezN39mCtJFXP1x-ktK2kVF435uu8agLs';
+  const defaultImageUrl = 'https://i.ibb.co/0R334jM2/2024-01-30.jpg';
   const profileImageUrl = authorImageUrl || defaultImageUrl;
   const formattedDate = formatDate(date);
 
