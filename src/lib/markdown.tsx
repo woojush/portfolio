@@ -305,7 +305,7 @@ export function MarkdownRenderer({ content, className }: MarkdownRendererProps) 
             const text = extractText(children);
             const id = generateHeadingId(text, 2);
             return (
-              <h2 id={id} className="mb-3 mt-5 text-xl font-semibold scroll-mt-24" style={{ color: 'var(--card-bg)' }}>
+              <h2 id={id} className="mb-3 mt-5 text-xl font-semibold scroll-mt-24 text-black">
                 {children}
               </h2>
             );
@@ -314,11 +314,14 @@ export function MarkdownRenderer({ content, className }: MarkdownRendererProps) 
             const text = extractText(children);
             const id = generateHeadingId(text, 3);
             return (
-              <h3 id={id} className="mb-2 mt-4 text-lg font-semibold scroll-mt-24" style={{ color: 'var(--card-bg)' }}>
+              <h3 id={id} className="mb-2 mt-4 text-lg font-semibold scroll-mt-24 text-black">
                 {children}
               </h3>
             );
           },
+          hr: () => (
+            <hr className="my-6 border-t border-gray-300" />
+          ),
           p: ({ children }) => <p className="mb-4 leading-relaxed text-black">{children}</p>,
           ul: ({ children }) => <ul className="mb-4 ml-6 list-disc space-y-1 text-black [&_li::marker]:text-black">{children}</ul>,
           ol: ({ children }) => <ol className="mb-4 ml-6 list-decimal space-y-1 text-black [&_li::marker]:text-black">{children}</ol>,
