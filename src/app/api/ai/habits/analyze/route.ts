@@ -8,7 +8,13 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'GEMINI_API_KEY not configured' }, { status: 500 });
     }
 
-    const body = await req.json();
+    let body;
+    try {
+      body = await req.json();
+    } catch (error) {
+      console.error('Failed to parse request body:', error);
+      return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
+    }
     // Fallback for logs -> habitLogs to support old/incorrect client payloads
     const { habitDefinitions, dailyRecords, habitId } = body;
     const habitLogs = body.habitLogs || body.logs || [];
