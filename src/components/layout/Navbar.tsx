@@ -61,11 +61,6 @@ export function Navbar() {
   const isAdminPage = pathname ? pathname.startsWith('/admin') && pathname !== '/admin/login' : false;
   const [loggingOut, setLoggingOut] = useState(false);
 
-  // 디버깅: Navbar 렌더링 확인
-  useEffect(() => {
-    console.log('Navbar rendered:', { pathname, isAdminPage, isLoggedIn });
-  }, [pathname, isAdminPage, isLoggedIn]);
-
   // 일반 화면: 화이트 계열 고정, 관리자: 네이비 고정
   const navColors = isAdminPage
     ? {
@@ -78,7 +73,7 @@ export function Navbar() {
       }
     : {
         // 일반 화면: 화이트 계열 고정
-        bg: 'rgba(255,255,255,0.95)', // 화이트 반투명
+        bg: 'rgba(255,255,255,1)', // 화이트 불투명 (명확하게 보이도록)
         text: '#0F172A', // 다크 텍스트
         hoverBg: 'rgba(15,23,42,0.08)', // 다크 호버
         hoverText: '#0F172A',
@@ -223,7 +218,10 @@ export function Navbar() {
         position: 'sticky',
         top: 0,
         zIndex: 50,
-        width: '100%'
+        width: '100%',
+        minHeight: '64px',
+        display: 'block',
+        opacity: 1
       }}
     >
       <nav className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 md:px-6">
